@@ -168,9 +168,14 @@ public class OpenAIController : MonoBehaviour
 
         string[] lines = chat_gpt_response.Trim().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
+        // Getting rid of the \n at the end of the lines
         for (int i = 0; i < lines.Length; i++) {
-            // Debug.Log("***************Trimmed lines from ChatGPT Response*******************\n\n" + lines[i] + "\n\n");
+            if (lines[i].EndsWith("\\n")) {
+                int line_new_length = lines[i].Length - 2; 
+                lines[i] = lines[i].Substring(0, line_new_length).Trim(); 
+            }
         }
+
         // Debug.Log("***************InstantiateWorldGrid: GPT Response***************");
         // Debug.Log(chat_gpt_response);
         // Debug.Log("******************************************************");
@@ -265,10 +270,14 @@ public class OpenAIController : MonoBehaviour
 
         string[] lines = responseText.Trim().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-        for (int i = 0; i < lines.Length; i++)
-        {
-            // Debug.Log("***************Trimmed lines from ChatGPT Response*******************\n\n" + lines[i] + "\n\n");
+        for (int i = 0; i < lines.Length; i++) {
+            if (lines[i].EndsWith("\\n")) {
+                // Debug.Log("***************Trimmed lines from ChatGPT Response*******************\n\n" + lines[i] + "\n\n");
+                int line_new_length = lines[i].Length - 2; 
+                lines[i] = lines[i].Substring(0, line_new_length).Trim(); 
+            }
         }
+
         // Debug.Log("***************chatGPT Response Message***************");
         // Debug.Log(responseText);
         // Debug.Log("******************************************************");
@@ -288,7 +297,12 @@ public class OpenAIController : MonoBehaviour
                     for (int j = 0; j < cells.Length; j++)
                     {
                         // Trim the cell to get the ID and assign it to the character_Grid
-                        string cellId = cells[j].Trim();
+                        string cellId;
+                        if (cells[j].Contains('\n')) {
+                            cellId = cells[j].Trim('\n');
+                        } else {
+                            cellId = cells[j];
+                        }
                         grid[i, j] = cellId;
                     }
                 }
@@ -549,6 +563,9 @@ public class OpenAIController : MonoBehaviour
                     current_Tile = Instantiate(prefab, new Vector3(i, y_Pos, j), Quaternion.identity);
                     // Groups the tiles together and organizes them neatly
                     current_Tile.transform.parent = environmentTile.transform;
+                } else {
+                    Debug.Log("prefab = null");
+                    Debug.Log(grid[i, j]);
                 }
             }
         }

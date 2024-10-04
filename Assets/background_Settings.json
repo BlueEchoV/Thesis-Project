@@ -1,5 +1,5 @@
 {
-   "BackgroundStory": "Create a 10x10 grid of rock tiles (003)",
+   "BackgroundStory": "Create a grass area with a pond in it.",
    "Format": {
         "Type": "Grid",
         "Rows": 10,
