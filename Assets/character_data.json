@@ -1,0 +1,24 @@
+{
+    "Format": {
+        "Type": "Grid",
+        "Rows": 10,
+        "Columns": 10,
+        "Description": "ONLY respond with a 10x10 grid formatted exactly as specified. Move each character one block in any walkable direction based on the 'Original World Grid'. Maintain the original environment tiles for any positions without characters. Replace the position a character moves from with the correct environment tile from the 'Original World Grid'. Format the response as a table with 10 rows and 10 columns using three-digit ObjectIDs. Separate each ID with a pipe '|' and terminate each row with a newline character '\\n'. Do not include any other text, comments, or explanations."
+    },
+    "Characters": [
+        {
+            "ObjectID": "101",
+            "Type": "Character",
+            "CharacterModelName": "Civilian Man",
+            "CharacterDescription": "",
+            "CurrentActivity": ""
+        },
+        {
+            "ObjectID": "102",
+            "Type": "Character",
+            "CharacterModelName": "Civilian Woman",
+            "CharacterDescription": "",
+            "CurrentActivity": ""
+        }
+    ]
+}

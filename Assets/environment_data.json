@@ -1,0 +1,35 @@
+{
+   "BackgroundStory": "Create a grass area with a pond in it.",
+   "Format": {
+        "Type": "Grid",
+        "Rows": 10,
+        "Columns": 10,
+        "Description": "Construct the grid based on the description provided in the 'BackgroundStory' section of the json. Please make sure the 10x10 grid map is represented in a text format suitable for parsing. Only provide the map in your response. Format the map as a table with 10 rows and 10 columns, where each cell contains a three-digit ObjectID of the tile which are provided in the 'EnvironmentTiles' section. Separate each ID with a pipe '|' symbol and terminate each row with a newline character '\\n'."
+    },
+    "EnvironmentTiles": [
+        {
+            "ObjectID": "001",
+            "EnvironmentModelName": "Grass",
+            "Type": "Environment Tile",
+            "Walkable": true
+        },
+        {
+            "ObjectID": "002",
+            "EnvironmentModelName": "Water",
+            "Type": "Environment Tile",
+            "Walkable": false
+        },
+        {
+            "ObjectID": "003",
+            "EnvironmentModelName": "Rock",
+            "Type": "Environment Tile",
+            "Walkable": true
+        },
+        {
+            "ObjectID": "004",
+            "EnvironmentModelName": "Market",
+            "Type": "Environment Tile",
+            "Walkable": false
+        }
+    ]
+}
