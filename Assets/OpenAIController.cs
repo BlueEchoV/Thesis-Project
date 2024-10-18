@@ -31,6 +31,7 @@ public class OpenAIController : MonoBehaviour {
     private Dictionary<string, Character> characters_by_id = new Dictionary<string, Character>();
 
     // Create a 10x10 character_Grid to hold the IDs (2D array)
+    string backstory_global;
     string[,] world_grid_global = new string[grid_width, grid_height];
     string[,] character_Grid = new string[grid_width, grid_height];
     string walkable_block_ids;
@@ -52,8 +53,15 @@ public class OpenAIController : MonoBehaviour {
         await GenerateWorldWithChatGPT(environment_data_file_path); 
 
         // NOTE: Only start after the GenerateWorldWithChatGPT as finished!
-        string character_data_file_path = Path.Combine(Application.dataPath, "character_data.json");
-       PlaceCharactersInWorldAndUpdate(character_data_file_path); 
+        string character_data_initial_file_path = Path.Combine(Application.dataPath, "character_data_initial.json");
+        if (character_data_initial_file_path == null) {
+            Debug.Log("ERROR: Filepath is null");
+        }
+        string character_data_updating_file_path = Path.Combine(Application.dataPath, "character_data_updating.json");
+        if (character_data_updating_file_path == null) {
+            Debug.Log("ERROR: Filepath is null");
+        }
+        PlaceCharactersInWorldAndUpdate(character_data_initial_file_path, character_data_updating_file_path); 
     }
     public class EnvironmentData 
     {
@@ -156,12 +164,24 @@ public class OpenAIController : MonoBehaviour {
 
         return characterData;
     }
+        // Load the character JSON file
+    private FormatSpecification LoadFormatSpecificationFromJson(string file_path)
+    {
+        // Read the text from the specified file
+        string jsonContent = File.ReadAllText(file_path);
+        // Convert the text into a CharacterData object
+        var format_specification = JsonConvert.DeserializeObject<FormatSpecification>(jsonContent);
+        return format_specification;
+    }
+
+    // NOTE: FIRST GENERATION PROMPT
     private async Task GenerateWorldWithChatGPT(string file_path)
     {
-        Debug.Log("Inside GenerateWorldWithChatGPT");
-        if (File.Exists(file_path))
-        {
+        // Debug.Log("Inside GenerateWorldWithChatGPT");
+        if (File.Exists(file_path)) {
             EnvironmentData environment_data = LoadEnvironmentDataFromJson(file_path);
+            backstory_global = JsonConvert.SerializeObject(environment_data.BackgroundStory, Formatting.None);
+            Debug.Log("Back Story Global\n" + backstory_global);
             // NOTE: Convert the EnvironmentData type back into a json string
             string game_data_string = JsonConvert.SerializeObject(environment_data, Formatting.None);
             // For this prompt response, we only want it to generate the terrain (ignoring the character ids
@@ -170,9 +190,9 @@ public class OpenAIController : MonoBehaviour {
                 "Respond only with the grid, formatted as described in the 'Format' section. " +
                 $"JSON File: {game_data_string}";            
 
-            Debug.Log("Message sent to chatGPT:\n" + prompt);
+            Debug.Log("Prompt 1: World Generation\n" + prompt);
 
-            Debug.Log($"Walkable Block IDs: {walkable_block_ids}");
+            // Debug.Log($"Walkable Block IDs: {walkable_block_ids}");
 
             ChatResult chat_gpt_result = await SendPromptToChatGPT(prompt);
 
@@ -180,8 +200,10 @@ public class OpenAIController : MonoBehaviour {
             if (chat_gpt_result != null && chat_gpt_result.Choices != null && chat_gpt_result.Choices.Count > 0)
             {
                 // NOTE: Pull the text from the ChatResult struct
-                string chat_gpt_response = chat_gpt_result.Choices[0].Message.TextContent;
-                InstantiateWorldGrid(chat_gpt_response);
+                string chat_gpt_string = chat_gpt_result.Choices[0].Message.TextContent;
+                Debug.Log("Response 1: World Generation\n" + chat_gpt_string);
+                InstantiateWorldGrid(chat_gpt_string);
+                PrintGridToDebug("Instantiation 1: World Grid", world_grid_global);
             }
             else
             {
@@ -191,6 +213,119 @@ public class OpenAIController : MonoBehaviour {
         else
         {
             Debug.LogError("Cannot find the JSON file: " + file_path + "\n\n");
+        }
+    }
+
+    // NOTE: SECOND GENERATION PROMPT
+    private async Task PlaceCharactersInWorldAndUpdate(string file_path_initial_placement, string file_path_updating_placement)
+    {
+        // Debug.Log("Inside PlaceCharactersInWorldCoroutine");
+        CharacterData initial_placement = LoadCharacterDataFromJson(file_path_initial_placement);
+        string character_data_string = JsonConvert.SerializeObject(initial_placement, Formatting.None);
+
+        string world_Grid_String = GridToString(world_grid_global);
+        string character_Grid_String = GridToString(character_Grid);
+        string prompt =
+            "Instructions: Use the provided 'Character Data' to place each character on the 'Current World Grid'. " +
+            "Only place characters on the specified Walkable Tiles. Do not change any other grid indices. " +
+            "The characters you should place are up to you. Please base the characters you place on the 'Back Story\n" +
+            $"'Character Data':\n{character_data_string}\n\n" +
+            $"'Current World Grid':\n{world_Grid_String}\n\n" +
+            $"'Walkable Tiles' are defined by the following Object IDs:\n{walkable_block_ids}.\n\n" +
+            $"'Back Story':\n{backstory_global}.\n\n";
+        // TODO: Add more debug code here
+
+        Debug.Log("Prompt 2: Character Placement\n" + prompt);
+
+        // Send the prompt to ChatGPT
+        ChatResult chat_gpt_result = await SendPromptToChatGPT(prompt);
+
+        // NOTE: Process the response from ChatGPT
+        if (chat_gpt_result != null && chat_gpt_result.Choices != null && chat_gpt_result.Choices.Count > 0)
+            {
+            var chat_gpt_string =  chat_gpt_result.Choices[0].Message.TextContent;
+            Debug.Log("Response 2: Character Placement\n" + chat_gpt_string);
+            InstantiateCharacterGrid(chat_gpt_string);
+            PrintGridToDebug("Instantiation 2: Character Placement", character_Grid);
+
+            // After processing initial placements, I can instantiate the grid to reflect these placements
+            // PrintGridToDebug("1st Character Grid Instantiation", character_Grid);
+            // InstantiateGrid(character_Grid, 1);
+
+            // Start a routine after the initial placement of the characters
+            StartCoroutine(UpdateCharacterPositionsCoroutine(file_path_updating_placement, initial_placement.Characters));
+        }
+    }
+
+    // NOTE: THIRD GENERATION PROMPT (RECURRING)
+    private IEnumerator UpdateCharacterPositionsCoroutine(string file_path_updating_placement, List<Character> characters)
+    {
+        // Construct the prompt with the static back story, current character_Grid, and character IDs
+        // I destroy the previous grid here as well
+        FormatSpecification updating_format_specification = LoadFormatSpecificationFromJson(file_path_updating_placement);
+        string updating_format_specification_string = JsonConvert.SerializeObject(updating_format_specification , Formatting.None);
+        // Debug.Log("updating_format_specification_string:\n" + updating_format_specification_string);
+
+        string character_IDs = JsonConvert.SerializeObject(characters, Formatting.None);
+        // Debug.Log("Character_IDs\n" + character_IDs);
+
+        string world_Grid_String = GridToString(world_grid_global);
+
+        // Start count at 3 because of two prompts prior
+        int count = 3;
+        // GAMELOOP
+        while (true)
+        {
+            string character_Grid_String = GridToString(character_Grid);
+
+            string prompt = "ONLY respond with the 10x10 grid in the format specified. Do not include any additional text, explanations, or comments. " +
+                "Move each character one block in any walkable direction (up, down, left, or right) based on the walkable tiles in the original world grid. " +
+                $"Walkable tiles have the following IDs: {walkable_block_ids}. " +
+                "If a character can't move, leave them in their current position. If a character is not on the grid, place them randomly on a walkable tile. " +
+                "Replace any position a character moves from with the corresponding environment tile from the original world grid. " +
+                "Here is the data you need:\n" +
+                $"Updating Character Positions: {updating_format_specification_string}\n" +
+                $"Character ID's: {character_IDs}\n" +
+                $"Original World Grid (without characters): {world_Grid_String}\n" +
+                $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
+                "Respond **ONLY** with the updated 10x10 grid. Use the same format as the original world grid, maintaining the environment tiles in any cells without characters. " +
+                "Format each row using three-digit IDs separated by pipes ('|'), like this: '001|002|003|...|010\\n'. " +
+                "**Do not add any extra text**, and ensure the response is formatted exactly as specified.";
+
+            Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
+
+            // Send the prompt to ChatGPT
+            Task<ChatResult> chat_gpt_response = SendPromptToChatGPT(prompt);
+
+            // PrintGridToDebug(character_Grid);
+            // Loop through and erase the current character world grid
+            for (int i = 0; i < character_Grid.GetLength(0); i++)
+            {
+                for (int j = 0; j < character_Grid.GetLength(1); j++)
+                {
+                    character_Grid[i, j] = "";
+                }
+            }
+            // PrintGridToDebug(character_Grid);
+
+            // Wait until the task is completed (Lambda)
+            yield return new WaitUntil(() => chat_gpt_response.IsCompleted);
+
+            // Process the response
+            if (chat_gpt_response.Status == TaskStatus.RanToCompletion)
+            {
+                var chat_gpt_result = chat_gpt_response.Result;
+                Debug.Log("Response " + count + ": Character Placement\n" + chat_gpt_result);
+
+                InstantiateCharacterGrid(chat_gpt_result.Choices[0].Message.TextContent);
+                PrintGridToDebug("Instantiation " + count + ": Character Grid Initial", character_Grid);
+            }
+
+            count++;
+
+            // InstantiateGrid(character_Grid, 1);
+            // Wait for a specified period before updating again
+            yield return new WaitForSeconds(5f);
         }
     }
 
@@ -279,7 +414,7 @@ public class OpenAIController : MonoBehaviour {
                 }
             }
 
-            PrintGridToDebug("First Grid instantiation", grid);
+            // PrintGridToDebug("Instantiation 1", grid);
             // Now I have a character_Grid with IDs, you can instantiate game objects or tiles based on these IDs
 
             world_grid_global = grid;
@@ -299,8 +434,8 @@ public class OpenAIController : MonoBehaviour {
 
     void InstantiateCharacterGrid(string responseText)
     {
-        Debug.Log("Inside InstantiateCharacterGrid\n");
-        Debug.Log(responseText);
+        // Debug.Log("Inside InstantiateCharacterGrid\n");
+        // Debug.Log(responseText);
 
         // ERROR CHECKING FOR THE INCORRECT RESPONSES FROM CHATGPT
         const string unwanted_phrase = "Here is the 10x10 grid map represented in text format:";
@@ -403,7 +538,7 @@ public class OpenAIController : MonoBehaviour {
             // Debug.LogError("**************************************************************");
             // Now I have a character_Grid with IDs, you can instantiate game objects or tiles based on these IDs
             character_Grid = grid;
-            PrintGridToDebug("character Grid after assignment", character_Grid);
+            // PrintGridToDebug("New Character Grid", character_Grid);
             InstantiateCharacterGridPrefabs(grid, 0);
         }
         else
@@ -437,100 +572,6 @@ public class OpenAIController : MonoBehaviour {
             grid_output += "\n";
         }
         Debug.Log(grid_output);
-    }
-
-    private void PlaceCharactersInWorldAndUpdate(string file_path)
-    {
-        Debug.Log("Inside PlaceCharactersInWorldCoroutine");
-        CharacterData character_data = LoadCharacterDataFromJson(file_path);
-        string character_data_string = JsonConvert.SerializeObject(character_data, Formatting.None);
-
-        string world_Grid_String = GridToString(world_grid_global);
-        string character_Grid_String = GridToString(character_Grid);
-        string prompt = 
-            "Instructions: Use the provided character data to place each character on the current grid." +
-            "Only place characters on the specified walkable tiles. Do not change any other grid indices." +
-            $"Walkable blocks are defined by the following Object IDs: {walkable_block_ids}.\n\n" +
-            $"Character Data: {character_data_string}\n\n" +
-            $"Current World Grid:\n{world_Grid_String}\n";
-        // TODO: Add more debug code here
-
-        Debug.Log("Character Generation Prompt\n");
-        Debug.Log(prompt);
-
-        // Send the prompt to ChatGPT
-        Task<ChatResult> chatResultTask = SendPromptToChatGPT(prompt);
-
-        // Process the response
-        if (chatResultTask.Status == TaskStatus.RanToCompletion)
-        {
-            var chatResult = chatResultTask.Result;
-            InstantiateCharacterGrid(chatResult.Choices[0].Message.TextContent);
-
-            // After processing initial placements, I can instantiate the grid to reflect these placements
-            PrintGridToDebug("Character Grid", character_Grid);
-            // InstantiateGrid(character_Grid, 1);
-        }
-
-        // Start a routine after the initial placement of the characters
-        StartCoroutine(UpdateCharacterPositionsCoroutine(file_path));
-    }
-
-    private IEnumerator UpdateCharacterPositionsCoroutine(string file_path)
-    {
-        while (true)
-        {
-            // Construct the prompt with the static back story, current character_Grid, and character IDs
-            // I destroy the previous grid here as well
-            CharacterData character_data = LoadCharacterDataFromJson(file_path);
-            string character_data_string = JsonConvert.SerializeObject(character_data, Formatting.None);
-            string world_Grid_String = GridToString(world_grid_global);
-            string character_Grid_String = GridToString(character_Grid);
-
-            string prompt = "ONLY respond with the 10x10 grid in the format specified. Do not include any additional text, explanations, or comments. " +
-                "Move each character one block in any walkable direction (up, down, left, or right) based on the walkable tiles in the original world grid. " +
-                $"Walkable tiles have the following IDs: {walkable_block_ids}. " +
-                "If a character can't move, leave them in their current position. If a character is not on the grid, place them randomly on a walkable tile. " +
-                "Replace any position a character moves from with the corresponding environment tile from the original world grid. " +
-                "Here is the data you need:\n" +
-                $"Character Data: {character_data_string}\n" +
-                $"Original World Grid (without characters): {world_Grid_String}\n" +
-                $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
-                "Respond **ONLY** with the updated 10x10 grid. Use the same format as the original world grid, maintaining the environment tiles in any cells without characters. " +
-                "Format each row using three-digit IDs separated by pipes ('|'), like this: '001|002|003|...|010\\n'. " +
-                "**Do not add any extra text**, and ensure the response is formatted exactly as specified.";
-
-            Debug.Log("UpdateCharacterPositionsCoroutine Prompt: " + prompt);
-
-            // Send the prompt to ChatGPT
-            Task<ChatResult> chatResultTask = SendPromptToChatGPT(prompt);
-
-            // PrintGridToDebug(character_Grid);
-            // Loop through and erase the current character world grid
-            for (int i = 0; i < character_Grid.GetLength(0); i++)
-            {
-                for (int j = 0; j < character_Grid.GetLength(1); j++)
-                {
-                    character_Grid[i, j] = "";
-                }
-            }
-            // PrintGridToDebug(character_Grid);
-
-            // Wait until the task is completed (Lambda)
-            yield return new WaitUntil(() => chatResultTask.IsCompleted);
-
-            // Process the response
-            if (chatResultTask.Status == TaskStatus.RanToCompletion)
-            {
-                var chatResult = chatResultTask.Result;
-
-                InstantiateCharacterGrid(chatResult.Choices[0].Message.TextContent);
-            }
-
-            // InstantiateGrid(character_Grid, 1);
-            // Wait for a specified period before updating again
-            yield return new WaitForSeconds(5f);
-        }
     }
 
     // Not using currenlty
