@@ -43,7 +43,6 @@ public class OpenAIController : MonoBehaviour {
     void Start()
     {
         // NOTE: Previous OpenAI Key
-        // api = new OpenAIAPI(new APIAuthentication("sk-uP3AyO3wF4C3PJr_MMIKSF4OundAYl5q0GWDaB9IoKT3BlbkFJ4-_w36WN8kFEFuOfjqezr0pl0FL9tdejxVwc-4XpkA"));
         string api_key = Environment.GetEnvironmentVariable("OPENAI_API_KEY", EnvironmentVariableTarget.User);
         Debug.Log(api_key);
         if (string.IsNullOrWhiteSpace(api_key)) {
