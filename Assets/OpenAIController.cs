@@ -613,22 +613,35 @@ public class OpenAIController : MonoBehaviour {
     // Function to send a prompt to ChatGPT and wait until a response is received
     public async Task<ChatResult> SendPromptToChatGPT(string prompt)
     {
-        Debug.Log("Before (SendPromptToChatGPT)");
-        var chat_gpt_result = await api.Chat.CreateChatCompletionAsync(new ChatRequest
+        try
         {
-            Model = Model.GPT4,
-            Temperature = 0.7,
-            MaxTokens = 500,
-            Messages = new List<ChatMessage>
+            Debug.Log("Before (SendPromptToChatGPT)");
+            // Perform the chat completion request and wait for it to complete
+            // IMPORTANT NOTE: If this is stuck, then it is most likely because 
+            // I have run out of credits for my current chat gpt api. Go here to 
+            // buy more: https://platform.openai.com/settings/organization/billing/overview
+            var chat_gpt_result = await api.Chat.CreateChatCompletionAsync(new ChatRequest
             {
-                new ChatMessage { Role = ChatMessageRole.System, TextContent = prompt }
-            }
-        });
+                Model = Model.GPT4,
+                Temperature = 0.7,
+                MaxTokens = 500,
+                Messages = new List<ChatMessage>
+                {
+                    new ChatMessage { Role = ChatMessageRole.System, TextContent = prompt }
+                }
+            });
 
-        Debug.Log("After (SendPromptToChatGPT)");
-        // Return the text content of the response
-        return chat_gpt_result;
+            Debug.Log("After (SendPromptToChatGPT)");
+            // Return the text content of the response
+            return chat_gpt_result;
+        }
+        catch (Exception error)
+        {
+            Debug.LogError($"API Error: {error}");
+            return null;
+        }
     }
+
     private string GridToString(string[,] character_Grid)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
