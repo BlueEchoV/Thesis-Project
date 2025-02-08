@@ -196,6 +196,8 @@ public class OpenAIController : MonoBehaviour {
 
             ChatResult chat_gpt_result = await SendPromptToChatGPT(prompt);
 
+            Debug.Log("After prompt is sent");
+
             // NOTE: Process the response from ChatGPT
             if (chat_gpt_result != null && chat_gpt_result.Choices != null && chat_gpt_result.Choices.Count > 0)
             {
@@ -599,6 +601,7 @@ public class OpenAIController : MonoBehaviour {
     // Function to send a prompt to ChatGPT and wait until a response is received
     public async Task<ChatResult> SendPromptToChatGPT(string prompt)
     {
+        Debug.Log("Before (SendPromptToChatGPT)");
         // Perform the chat completion request and wait for it to complete
         var chat_gpt_result = await api.Chat.CreateChatCompletionAsync(new ChatRequest
         {
@@ -611,6 +614,7 @@ public class OpenAIController : MonoBehaviour {
             }
         });
 
+        Debug.Log("After (SendPromptToChatGPT)");
         // Return the text content of the response
         return chat_gpt_result;
     }
