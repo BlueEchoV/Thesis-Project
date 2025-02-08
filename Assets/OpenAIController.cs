@@ -12,6 +12,8 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Text;
 
+using System.Net.Http;
+
 public class OpenAIController : MonoBehaviour {
     // public TMP_Text textField;
     // public TMP_InputField inputField;
@@ -40,7 +42,10 @@ public class OpenAIController : MonoBehaviour {
 
     void Start()
     {
+        // NOTE: Previous OpenAI Key
+        // api = new OpenAIAPI(new APIAuthentication("sk-uP3AyO3wF4C3PJr_MMIKSF4OundAYl5q0GWDaB9IoKT3BlbkFJ4-_w36WN8kFEFuOfjqezr0pl0FL9tdejxVwc-4XpkA"));
         string api_key = Environment.GetEnvironmentVariable("OPENAI_API_KEY", EnvironmentVariableTarget.User);
+        Debug.Log(api_key);
         if (string.IsNullOrWhiteSpace(api_key)) {
             Debug.Log("Error: API key is null or empty");
         }
@@ -68,7 +73,7 @@ public class OpenAIController : MonoBehaviour {
         if (character_data_updating_file_path == null) {
             Debug.Log("ERROR: Filepath is null");
         }
-        PlaceCharactersInWorldAndUpdate(character_data_initial_file_path, character_data_updating_file_path); 
+        await PlaceCharactersInWorldAndUpdate(character_data_initial_file_path, character_data_updating_file_path); 
     }
     public class EnvironmentData 
     {
@@ -609,7 +614,6 @@ public class OpenAIController : MonoBehaviour {
     public async Task<ChatResult> SendPromptToChatGPT(string prompt)
     {
         Debug.Log("Before (SendPromptToChatGPT)");
-        // Perform the chat completion request and wait for it to complete
         var chat_gpt_result = await api.Chat.CreateChatCompletionAsync(new ChatRequest
         {
             Model = Model.GPT4,
