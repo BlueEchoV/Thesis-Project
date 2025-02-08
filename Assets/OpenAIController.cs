@@ -40,7 +40,14 @@ public class OpenAIController : MonoBehaviour {
 
     void Start()
     {
-        api = new OpenAIAPI(Environment.GetEnvironmentVariable("OPENAI_API_KEY", EnvironmentVariableTarget.User));
+        string api_key = Environment.GetEnvironmentVariable("OPENAI_API_KEY", EnvironmentVariableTarget.User);
+        if (string.IsNullOrWhiteSpace(api_key)) {
+            Debug.Log("Error: API key is null or empty");
+        }
+        else {
+            api = new OpenAIAPI(new APIAuthentication(api_key));
+            Debug.Log("API initialized successfully.");
+        }
 
         InitializeGame().ConfigureAwait(false);
     }
