@@ -40,11 +40,12 @@ public class OpenAIController : MonoBehaviour {
     // Not using currently
     // static string gridGenerationInstructions = "Please generate a 10x10 grid map represented in a text format suitable for parsing. Only provide the map in your response. Format the map as a table with 10 rows and 10 columns, where each cell contains a three-digit ID of the tile or character which are provided in the environmentTiles and characters section. Separate each ID with a pipe '|' symbol and terminate each row with a newline character '\\n'. Include a colon at the end of the entire map. An example row might look like '001|002|003|...|010\\n', and there should be 10 such rows to complete the grid.";
 
+    string environment_data_string;
+
     void Start()
     {
         // NOTE: Previous OpenAI Key
         string api_key = Environment.GetEnvironmentVariable("OPENAI_API_KEY", EnvironmentVariableTarget.User);
-        Debug.Log(api_key);
         if (string.IsNullOrWhiteSpace(api_key)) {
             Debug.Log("Error: API key is null or empty");
         }
@@ -194,27 +195,25 @@ public class OpenAIController : MonoBehaviour {
             backstory_global = JsonConvert.SerializeObject(environment_data.BackgroundStory, Formatting.None);
             Debug.Log("Back Story Global\n" + backstory_global);
             // NOTE: Convert the EnvironmentData type back into a json string
-            string game_data_string = JsonConvert.SerializeObject(environment_data, Formatting.None);
+            environment_data_string = JsonConvert.SerializeObject(environment_data, Formatting.None);
             // For this prompt response, we only want it to generate the terrain (ignoring the character ids
             string prompt = 
                 "Instructions: Construct a 10x10 grid using only the ObjectIDs from the JSON file provided. " +
                 "Respond only with the grid, formatted as described in the 'Format' section. " +
-                $"JSON File: {game_data_string}";            
+                $"JSON File: {environment_data_string}";            
 
-            Debug.Log("Prompt 1: World Generation\n" + prompt);
+            Debug.Log("Prompt 1 - World Generation: \n" + prompt);
 
             // Debug.Log($"Walkable Block IDs: {walkable_block_ids}");
 
             ChatResult chat_gpt_result = await SendPromptToChatGPT(prompt);
-
-            Debug.Log("After prompt is sent");
 
             // NOTE: Process the response from ChatGPT
             if (chat_gpt_result != null && chat_gpt_result.Choices != null && chat_gpt_result.Choices.Count > 0)
             {
                 // NOTE: Pull the text from the ChatResult struct
                 string chat_gpt_string = chat_gpt_result.Choices[0].Message.TextContent;
-                Debug.Log("Response 1: World Generation\n" + chat_gpt_string);
+                Debug.Log("Response 1 - World Generation: \n" + chat_gpt_string);
                 InstantiateWorldGrid(chat_gpt_string);
                 PrintGridToDebug("Instantiation 1: World Grid", world_grid_global);
             }
@@ -239,13 +238,18 @@ public class OpenAIController : MonoBehaviour {
         string world_Grid_String = GridToString(world_grid_global);
         string character_Grid_String = GridToString(character_Grid);
         string prompt =
-            "Instructions: Use the provided 'Character Data' to place each character on the 'Current World Grid'. " +
-            "Only place characters on the specified Walkable Tiles. Do not change any other grid indices. " +
-            "The characters you should place are up to you. Please base the characters you place on the 'Back Story\n" +
-            $"'Character Data':\n{character_data_string}\n\n" +
-            $"'Current World Grid':\n{world_Grid_String}\n\n" +
-            $"'Walkable Tiles' are defined by the following Object IDs:\n{walkable_block_ids}.\n\n" +
-            $"'Back Story':\n{backstory_global}.\n\n";
+            "Instructions: Use the provided 'Character Data' to place each character on the Current World Grid " +
+            "by replacing a Walkable Tile with the appropriate character's ID. Don't place them on a water tile! " +
+            "Only place characters on the specified Walkable Tiles as defined in the Environment Tile Data. Do not " +
+            "change any other grid indices. The characters you should place are up to you. Please base the characters " +
+            "you place on the Back Story if possible.\n\n" +
+            "'Character Data':\n" + character_data_string + "\n\n" +
+            "'Current World Grid':\n" + world_Grid_String + "\n\n" +
+            "'Walkable Tiles' are dynamically determined by tiles where 'Walkable: true' in the Environment Tile Data.\n" +
+            "'Environment Tile Data':\n" + environment_data_string + "\n\n" +
+            "'Back Story':\n" + backstory_global + ".\n\n" +
+            "Ensure that you do not place characters on any tiles where 'Walkable' is false in the Environment Tile Data.";
+
         // TODO: Add more debug code here
 
         Debug.Log("Prompt 2: Character Placement\n" + prompt);
@@ -291,19 +295,46 @@ public class OpenAIController : MonoBehaviour {
         {
             string character_Grid_String = GridToString(character_Grid);
 
-            string prompt = "ONLY respond with the 10x10 grid in the format specified. Do not include any additional text, explanations, or comments. " +
-                "Move each character one block in any walkable direction (up, down, left, or right) based on the walkable tiles in the original world grid. " +
+            string prompt = 
+                "Updating Characters ONLY respond with the 10x10 grid in the specified format below. " +
+                "Do not include any additional text, explanations, or comments. Move each character " +
+                "one block in any walkable direction (up, down, left, or right) by replacing a Walkable " +
+                "Tile with the appropriate character's ID. Ensure characters only move to tiles that are " +
+                "defined as 'Walkable: true' in the provided JSON and avoid non-walkable tiles. " +
+                "If a character can't move to a new walkable tile, leave them in their current position. " +
+                "Replace any position a character moves from with the corresponding environment tile from " +
+                "the original world grid.\n\n" +
+                "Walkable Tile IDs: Tiles with 'Walkable: true' in the JSON environment data should be treated as walkable.\n\n" +
+                $"Character ID's: {character_IDs}\n" +
+                $"Environment Tile Data (JSON): {environment_data_string}\n" +
+                $"Original World Grid (without characters): {world_Grid_String}\n" +
+                $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
+                "Respond **ONLY** with the updated 10x10 grid. Use the same format as the original " +
+                "world grid, maintaining the environment tiles in any cells without characters. " +
+                "Format each row using three-digit IDs separated by pipes ('|'), like this: " +
+                "'001|002|003|...|010\\n'.";
+
+            /*
+            string prompt = "ONLY respond with the 10x10 grid in the format specified below:\n " +
+                "Do not include any additional text, explanations, or comments. Move each character " +
+                "one block in any walkable direction (up, down, left, or right) by replacing a Walkable" +
+                "Tile with the appropriate character's ID based on the walkable " +
+                "tiles in the original world grid. Don't place them on a water tile! 002" +
                 $"Walkable tiles have the following IDs: {walkable_block_ids}. " +
-                "If a character can't move, leave them in their current position. If a character is not on the grid, place them randomly on a walkable tile. " +
-                "Replace any position a character moves from with the corresponding environment tile from the original world grid. " +
+                "If a character can't move, leave them in their current position. If a character is not " +
+                "on the grid, place them randomly on a walkable tile. Replace any position a character " +
+                "moves from with the corresponding environment tile from the original world grid. " +
                 "Here is the data you need:\n" +
                 $"Updating Character Positions: {updating_format_specification_string}\n" +
                 $"Character ID's: {character_IDs}\n" +
                 $"Original World Grid (without characters): {world_Grid_String}\n" +
                 $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
-                "Respond **ONLY** with the updated 10x10 grid. Use the same format as the original world grid, maintaining the environment tiles in any cells without characters. " +
-                "Format each row using three-digit IDs separated by pipes ('|'), like this: '001|002|003|...|010\\n'. " +
+                "Respond **ONLY** with the updated 10x10 grid. Use the same format as the original " +
+                "world grid, maintaining the environment tiles in any cells without characters. " +
+                "Format each row using three-digit IDs separated by pipes ('|'), like this:" +
+                " '001|002|003|...|010\\n'. " +
                 "**Do not add any extra text**, and ensure the response is formatted exactly as specified.";
+            */
 
             Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
 
@@ -614,14 +645,13 @@ public class OpenAIController : MonoBehaviour {
     {
         try
         {
-            Debug.Log("Before (SendPromptToChatGPT)");
             // Perform the chat completion request and wait for it to complete
             // IMPORTANT NOTE: If this is stuck, then it is most likely because 
             // I have run out of credits for my current chat gpt api. Go here to 
             // buy more: https://platform.openai.com/settings/organization/billing/overview
             var chat_gpt_result = await api.Chat.CreateChatCompletionAsync(new ChatRequest
             {
-                Model = Model.GPT4,
+                Model = Model.GPT4_Turbo,
                 Temperature = 0.7,
                 MaxTokens = 500,
                 Messages = new List<ChatMessage>
@@ -630,7 +660,6 @@ public class OpenAIController : MonoBehaviour {
                 }
             });
 
-            Debug.Log("After (SendPromptToChatGPT)");
             // Return the text content of the response
             return chat_gpt_result;
         }
