@@ -240,9 +240,12 @@ public class OpenAIController : MonoBehaviour {
         string prompt =
             "Instructions: Use the provided 'Character Data' to place each character on the Current World Grid " +
             "by replacing a Walkable Tile with the appropriate character's ID. Don't place them on a water tile! " +
-            "Only place characters on the specified Walkable Tiles as defined in the Environment Tile Data. Do not " +
-            "change any other grid indices. The characters you should place are up to you. Please base the characters " +
-            "you place on the Back Story if possible.\n\n" +
+            "Assign an appropriate task to each character based on the character description, back story, and environment. " +
+            "Only place characters on the specified Walkable Tiles as defined in the Environment Tile Data. " +
+            "If a cell does not contain a character, leave it as the environment tile ID only (e.g., '001'). " +
+            "Format the response as a 10x10 grid where cells containing characters use the format 'CharacterID,Task'. " +
+            "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
+
             "'Character Data':\n" + character_data_string + "\n\n" +
             "'Current World Grid':\n" + world_Grid_String + "\n\n" +
             "'Walkable Tiles' are dynamically determined by tiles where 'Walkable: true' in the Environment Tile Data.\n" +
@@ -295,25 +298,19 @@ public class OpenAIController : MonoBehaviour {
         {
             string character_Grid_String = GridToString(character_Grid);
 
-            string prompt = 
-                "Updating Characters ONLY respond with the 10x10 grid in the specified format below. " +
-                "Do not include any additional text, explanations, or comments. Move each character " +
-                "one block in any walkable direction (up, down, left, or right) by replacing a Walkable " +
-                "Tile with the appropriate character's ID. Ensure characters only move to tiles that are " +
-                "defined as 'Walkable: true' in the provided JSON and avoid non-walkable tiles. " +
-                "If a character can't move to a new walkable tile, leave them in their current position. " +
-                "Replace any position a character moves from with the corresponding environment tile from " +
-                "the original world grid.\n\n" +
+            string prompt =
+                "Update the character grid and assign the most suitable task to each character based on their type and environment context. " +
+                "Move each character one block in any walkable direction (up, down, left, or right) if possible, and assign a task using the format: " +
+                "CharacterID,Task. Ensure that tasks are meaningful based on the character’s type (e.g., a farmer could be assigned farming if near a crop tile). " +
+                "If a character can't move, keep them in their current position but still assign them a task. " +
+                "Replace any position a character moves from with the corresponding environment tile from the original world grid.\n\n" +
                 "Walkable Tile IDs: Tiles with 'Walkable: true' in the JSON environment data should be treated as walkable.\n\n" +
                 $"Character ID's: {character_IDs}\n" +
                 $"Environment Tile Data (JSON): {environment_data_string}\n" +
                 $"Original World Grid (without characters): {world_Grid_String}\n" +
                 $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
-                "Respond **ONLY** with the updated 10x10 grid. Use the same format as the original " +
-                "world grid, maintaining the environment tiles in any cells without characters. " +
-                "Format each row using three-digit IDs separated by pipes ('|'), like this: " +
-                "'001|002|003|...|010\\n'.";
-
+                "Respond **ONLY** with the updated 10x10 grid. Use the format CharacterID,Task in cells with characters, and only the tile ID in cells without characters. " +
+                "Example format for a row: '101,fishing|002|003|102,building|...'";
             /*
             string prompt = "ONLY respond with the 10x10 grid in the format specified below:\n " +
                 "Do not include any additional text, explanations, or comments. Move each character " +
@@ -738,27 +735,33 @@ public class OpenAIController : MonoBehaviour {
         }
     }
 
-    // For when I recieve a new activity
+    // For when I receive a new activity
     private void UpdateCharacterActivity(string character_id, string new_activity)
     {
+        Debug.Log($"Trying to update character with ID: {character_id}, Task: {new_activity}");
+
         foreach (var character_tile in instantiated_player_tiles)
         {
             if (character_tile != null && character_tile.name == character_id)
             {
-                var character_data = character_tile.GetComponent<Character>();
-                if (character_data != null)
+                Debug.Log($"Found character: {character_tile.name}, updating task.");
+
+                // Access the CharacterScript component
+                var character_script = character_tile.GetComponent<CharacterScript>();
+                if (character_script != null)
                 {
-                    character_data.CurrentActivity = new_activity;
-                    var text_mesh = character_tile.GetComponentInChildren<TextMeshPro>();
-                    if (text_mesh != null)
-                    {
-                        text_mesh.text = new_activity;
-                    }
+                    // Use CharacterScript to update activity text
+                    character_script.UpdateActivity(new_activity);
+                    Debug.Log($"Successfully updated character's task to: {new_activity}");
                 }
+                else
+                {
+                    Debug.LogError("CharacterScript not found on the character tile.");
+                }
+                return;  // Exit after updating the correct character
             }
         }
     }
-
     private Character GetCharacterDataById(string objectId)
     {
         if (characters_by_id.TryGetValue(objectId, out Character character))
@@ -774,42 +777,51 @@ public class OpenAIController : MonoBehaviour {
     // Instantiates the map
     void InstantiateCharacterGridPrefabs(string[,] grid, int y_Pos)
     {
-        // ClearInstantiatedTiles();
-        // Debug.LogError("***Instanciating grid***\n\n");
-        // PrintGridToDebug(grid);
-
         ClearInstantiatedTiles();
 
         for (int i = 0; i < grid.GetLength(0); i++)
         {
+            Debug.Log(grid.GetLength(0));
             for (int j = 0; j < grid.GetLength(1); j++)
             {
-                GameObject prefab = GetPrefabById(grid[i, j]);
+                Debug.Log(grid.GetLength(1));
+                string cellData = grid[i, j];
+                string characterId = cellData;
+                string task = null;
+
+                // Check if the cell contains a task (comma-separated)
+                if (cellData.Contains(","))
+                {
+                    string[] splitData = cellData.Split(',');
+                    characterId = splitData[0].Trim();  // Extract character ID
+                    task = splitData[1].Trim();         // Extract the task
+                }
+
+                // Instantiate the prefab based on character ID
+                GameObject prefab = GetPrefabById(characterId);
                 if (prefab != null)
                 {
-                    // This command makes a copy of the prefab object and adds it to the game world.
+                    // Instantiate character at the grid position
                     current_Tile_2 = Instantiate(prefab, new Vector3(i, y_Pos, j), Quaternion.identity);
-                    // Groups the tiles together and organizes them neatly
                     current_Tile_2.transform.parent = environmentTile.transform;
 
-                    // Update the text element for the activity
-                    var character_data = GetCharacterDataById(grid[i, j]);
-                    if (character_data != null)
+                    // Set the GameObject's name to the character ID only
+                    current_Tile_2.name = characterId;
+
+                    // Update character activity and display task if one is present
+                    if (task != null)
                     {
-                        TextMeshPro text_mesh = current_Tile_2.GetComponentInChildren<TextMeshPro>();
-                        if (text_mesh != null)
-                        {
-                            // text_mesh.text = character_data.CurrentActivity;
-                            text_mesh.text = character_data.CurrentActivity;
-                        }
+                        Debug.Log($"Assigning task '{task}' to character '{characterId}'");
+                        UpdateCharacterActivity(characterId, task);
                     }
 
+                    // Store the tile reference
                     instantiated_player_tiles[i, j] = current_Tile_2;
                 }
             }
         }
     }
-
+    
     private void ClearInstantiatedTiles()
     {
         for (int i = 0; i < grid_width; i++)

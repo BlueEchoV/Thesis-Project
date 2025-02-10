@@ -16,7 +16,7 @@ public class CharacterScript : MonoBehaviour
         }
         else
         {
-            UpdateActivity("Starting...");
+            UpdateActivity("Error");
         }
     }
 
