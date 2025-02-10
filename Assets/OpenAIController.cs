@@ -801,22 +801,20 @@ public class OpenAIController : MonoBehaviour {
                 GameObject prefab = GetPrefabById(characterId);
                 if (prefab != null)
                 {
-                    // Instantiate character at the grid position
-                    current_Tile_2 = Instantiate(prefab, new Vector3(i, y_Pos, j), Quaternion.identity);
-                    current_Tile_2.transform.parent = environmentTile.transform;
+                        GameObject characterInstance = Instantiate(prefab, new Vector3(i, 0, j), Quaternion.identity);
+                    characterInstance.transform.parent = environmentTile.transform;
 
-                    // Set the GameObject's name to the character ID only
-                    current_Tile_2.name = characterId;
+                    // Assign the correct ID to avoid mismatches during the search
+                    characterInstance.name = characterId;
 
-                    // Update character activity and display task if one is present
-                    if (task != null)
+                    // Call the CharacterScript to update the activity
+                    CharacterScript characterScript = characterInstance.GetComponentInChildren<CharacterScript>();
+                    if (characterScript != null && task != null)
                     {
-                        Debug.Log($"Assigning task '{task}' to character '{characterId}'");
-                        UpdateCharacterActivity(characterId, task);
+                        characterScript.UpdateActivity(task);
                     }
 
-                    // Store the tile reference
-                    instantiated_player_tiles[i, j] = current_Tile_2;
+                    instantiated_player_tiles[i, j] = characterInstance;
                 }
             }
         }
