@@ -369,6 +369,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: civilianWoman
       objectReference: {fileID: 0}
+    - target: {fileID: 7775139512043800817, guid: a843f01457d6fda4da27c4dfefbd91be, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

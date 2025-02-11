@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace CityPeople
@@ -12,15 +13,22 @@ namespace CityPeople
         void Start()
         {
             animator = GetComponent<Animator>();
+            Debug.Log("Animation script is running.");
             if (animator != null)
             {
-                myClips = animator.runtimeAnimatorController.animationClips;
-                PlayAnyClip();
-                StartCoroutine(ShuffleClips());
+                AnimationClip idleClip = animator.runtimeAnimatorController.animationClips
+                    .FirstOrDefault(clip => clip.name.ToLower().Contains("idle"));
+
+                if (idleClip != null)
+                {
+                    animator.CrossFadeInFixedTime(idleClip.name, 1.0f);
+                }
+                else
+                {
+                    Debug.LogWarning("Idle animation not found!");
+                }
             }
-
         }
-
         void PlayAnyClip()
         {
             var cl = myClips[Random.Range(0, myClips.Length)];
