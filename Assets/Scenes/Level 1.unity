@@ -380,16 +380,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 555f20c9baab05642ac1a685ec8d31a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textField: {fileID: 1660580125}
-  inputField: {fileID: 819201833}
-  okButton: {fileID: 1085624691}
-  isDebug: 1
   emptyPrefab: {fileID: 0}
   grassPrefab: {fileID: 100000, guid: c2cf9f73c2c052c47baf679fa7478662, type: 3}
   waterPrefab: {fileID: 100000, guid: d8be467a57b68b14583adbf3902c07d4, type: 3}
   rockPrefab: {fileID: 6591561313349374617, guid: fb143d703f4e868439ad70a0831a9b09, type: 3}
   civilianMan: {fileID: 8237986657329137817, guid: 0b7410b4f82c4d64eb36995880d80c94, type: 3}
-  civilianWoman: {fileID: 3982714585606315713, guid: 808c63f3dbccbac43a7e80f0fd9db026, type: 3}
+  civilianWoman: {fileID: 8237986657329137817, guid: d03ca00d2268b0240806eda3dc344c69, type: 3}
   marketPrefab: {fileID: 7991480308045853302, guid: 75b597ab94dbf7f449f74957d556de2a, type: 3}
   environmentTile: {fileID: 2067234813}
 --- !u!4 &777073245
@@ -772,7 +768,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 5, y: 10, z: 5}
+  m_LocalPosition: {x: 5, y: 11, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
