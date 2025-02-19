@@ -42,6 +42,9 @@ public class OpenAIController : MonoBehaviour {
 
     string environment_data_string;
 
+    int time = 600;
+    const int time_increment = 100;
+
     void Start()
     {
         // NOTE: Previous OpenAI Key
@@ -55,6 +58,15 @@ public class OpenAIController : MonoBehaviour {
         }
 
         InitializeGame().ConfigureAwait(false);
+    }
+
+    private void increment_world_clock()
+    {
+        time += 100;
+        if (time >= 2400)
+        {
+            time = 0;
+        } 
     }
 
     private async Task InitializeGame()
