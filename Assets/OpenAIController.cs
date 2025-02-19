@@ -311,9 +311,10 @@ public class OpenAIController : MonoBehaviour {
             string character_Grid_String = GridToString(character_Grid);
 
             string prompt =
-                "Update the character grid and assign the most suitable task to each character based on their type and environment context. " +
+                "Update the character grid and assign the most suitable task to each character based on their type, environment context, and the current time of day. " +
+                "Consider the time (0-2400) when determining tasks (e.g., farmers work during the day but rest at night, guards patrol at night, etc.). " +
                 "Move each character one block in any walkable direction (up, down, left, or right) if possible, and assign a task using the format: " +
-                "CharacterID,Task. Ensure that tasks are meaningful based on the character’s type (e.g., a farmer could be assigned farming if near a crop tile). " +
+                "CharacterID,Task. Ensure that tasks are meaningful based on the character’s type and the time of day. " +
                 "If a character can't move, keep them in their current position but still assign them a task. " +
                 "Replace any position a character moves from with the corresponding environment tile from the original world grid.\n\n" +
                 "Walkable Tile IDs: Tiles with 'Walkable: true' in the JSON environment data should be treated as walkable.\n\n" +
@@ -321,8 +322,10 @@ public class OpenAIController : MonoBehaviour {
                 $"Environment Tile Data (JSON): {environment_data_string}\n" +
                 $"Original World Grid (without characters): {world_Grid_String}\n" +
                 $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
+                $"Current Time: {time}\n" +
                 "Respond **ONLY** with the updated 10x10 grid. Use the format CharacterID,Task in cells with characters, and only the tile ID in cells without characters. " +
                 "Example format for a row: '101,fishing|002|003|102,building|...'";
+
             /*
             string prompt = "ONLY respond with the 10x10 grid in the format specified below:\n " +
                 "Do not include any additional text, explanations, or comments. Move each character " +
