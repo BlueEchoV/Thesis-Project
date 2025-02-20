@@ -66,7 +66,8 @@ public class OpenAIController : MonoBehaviour {
         if (time >= 2400)
         {
             time = 0;
-        } 
+        }
+        Debug.Log(time);
     }
 
     private async Task InitializeGame()
@@ -325,28 +326,6 @@ public class OpenAIController : MonoBehaviour {
                 $"Current Time: {time}\n" +
                 "Respond **ONLY** with the updated 10x10 grid. Use the format CharacterID,Task in cells with characters, and only the tile ID in cells without characters. " +
                 "Example format for a row: '101,fishing|002|003|102,building|...'";
-
-            /*
-            string prompt = "ONLY respond with the 10x10 grid in the format specified below:\n " +
-                "Do not include any additional text, explanations, or comments. Move each character " +
-                "one block in any walkable direction (up, down, left, or right) by replacing a Walkable" +
-                "Tile with the appropriate character's ID based on the walkable " +
-                "tiles in the original world grid. Don't place them on a water tile! 002" +
-                $"Walkable tiles have the following IDs: {walkable_block_ids}. " +
-                "If a character can't move, leave them in their current position. If a character is not " +
-                "on the grid, place them randomly on a walkable tile. Replace any position a character " +
-                "moves from with the corresponding environment tile from the original world grid. " +
-                "Here is the data you need:\n" +
-                $"Updating Character Positions: {updating_format_specification_string}\n" +
-                $"Character ID's: {character_IDs}\n" +
-                $"Original World Grid (without characters): {world_Grid_String}\n" +
-                $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
-                "Respond **ONLY** with the updated 10x10 grid. Use the same format as the original " +
-                "world grid, maintaining the environment tiles in any cells without characters. " +
-                "Format each row using three-digit IDs separated by pipes ('|'), like this:" +
-                " '001|002|003|...|010\\n'. " +
-                "**Do not add any extra text**, and ensure the response is formatted exactly as specified.";
-            */
 
             Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
 
