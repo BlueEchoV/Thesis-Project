@@ -15,19 +15,14 @@ using System.Text;
 using System.Net.Http;
 
 public class OpenAIController : MonoBehaviour {
-    // public TMP_Text textField;
-    // public TMP_InputField inputField;
-    // public Button okButton;
-
     private OpenAIAPI api;
     private List<ChatMessage> messages;
-
-    // public bool isDebug = true;
 
     public const int grid_width = 10;
     public const int grid_height = 10;
 
     private GameObject[,] instantiated_player_tiles = new GameObject[grid_width, grid_height];
+
     // For the text rendering of the tasks
     // Dictionary is a collection of key-value pairs
     private Dictionary<string, Character> characters_by_id = new Dictionary<string, Character>();
@@ -42,6 +37,7 @@ public class OpenAIController : MonoBehaviour {
 
     string environment_data_string;
 
+    // Starting time
     int time = 600;
     const int time_increment = 100;
 
@@ -92,8 +88,6 @@ public class OpenAIController : MonoBehaviour {
     {
         public string BackgroundStory { get; set; }
         public FormatSpecification Format { get; set; }
-        //     "GameTypeAndMechanics": "002",
-        // public string GameTypeAndMechanics { get; set; }
         public List<EnvironmentTile> EnvironmentTiles { get; set; }
     }
     public class CharacterData {
@@ -141,14 +135,12 @@ public class OpenAIController : MonoBehaviour {
     // Helper function to construct the walkable blocks string
     private string GetWalkableBlocksString(EnvironmentData environment_data)
     {
-        // Check if environment_data is null
         if (environment_data == null)
         {
             Debug.LogError("Environment data is null in GetWalkableBlocksString.");
             return string.Empty;
         }
 
-        // Check if EnvironmentTiles is null
         if (environment_data.EnvironmentTiles == null)
         {
             Debug.LogError("EnvironmentTiles is null in GetWalkableBlocksString.");
@@ -173,11 +165,11 @@ public class OpenAIController : MonoBehaviour {
     }
 
 
-    // Load the character JSON file
     private CharacterData LoadCharacterDataFromJson(string file_path)
     {
         // Read the text from the specified file
         string jsonContent = File.ReadAllText(file_path);
+
         // Convert the text into a CharacterData object
         var characterData = JsonConvert.DeserializeObject<CharacterData>(jsonContent);
 
@@ -194,8 +186,10 @@ public class OpenAIController : MonoBehaviour {
     {
         // Read the text from the specified file
         string jsonContent = File.ReadAllText(file_path);
+
         // Convert the text into a CharacterData object
         var format_specification = JsonConvert.DeserializeObject<FormatSpecification>(jsonContent);
+
         return format_specification;
     }
 
@@ -262,6 +256,7 @@ public class OpenAIController : MonoBehaviour {
             "'Character Data':\n" + character_data_string + "\n\n" +
             "'Current World Grid':\n" + world_Grid_String + "\n\n" +
             "'Walkable Tiles' are dynamically determined by tiles where 'Walkable: true' in the Environment Tile Data.\n" +
+            "DO NOT PLACE CHARACTERS ON TILES WHERE 'Walkable' IS FALSE IN THE 'Environment Tile Data'.\n" +
             "'Environment Tile Data':\n" + environment_data_string + "\n\n" +
             "'Back Story':\n" + backstory_global + ".\n\n" +
             "Ensure that you do not place characters on any tiles where 'Walkable' is false in the Environment Tile Data.";
@@ -318,7 +313,9 @@ public class OpenAIController : MonoBehaviour {
                 "CharacterID,Task. Ensure that tasks are meaningful based on the character’s type and the time of day. " +
                 "If a character can't move, keep them in their current position but still assign them a task. " +
                 "Replace any position a character moves from with the corresponding environment tile from the original world grid.\n\n" +
-                "Walkable Tile IDs: Tiles with 'Walkable: true' in the JSON environment data should be treated as walkable.\n\n" +
+                "Walkable Tile IDs: Tiles with 'Walkable: true' in the JSON environment data should be treated as walkable.\n" +
+                "DO NOT MOVE CHARACTERS ONTO TILES WHERE 'Walkable' IS FALSE IN THE 'Environment Tile Data'.\n\n" +
+
                 $"Character ID's: {character_IDs}\n" +
                 $"Environment Tile Data (JSON): {environment_data_string}\n" +
                 $"Original World Grid (without characters): {world_Grid_String}\n" +
@@ -326,6 +323,7 @@ public class OpenAIController : MonoBehaviour {
                 $"Current Time: {time}\n" +
                 "Respond **ONLY** with the updated 10x10 grid. Use the format CharacterID,Task in cells with characters, and only the tile ID in cells without characters. " +
                 "Example format for a row: '101,fishing|002|003|102,building|...'";
+
 
             Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
 
@@ -515,7 +513,6 @@ public class OpenAIController : MonoBehaviour {
         {
             responseText = responseText.Substring(0, responseText.Length - 1);
         }
-        // ******************************************************************************
 
         string[] lines = responseText.Trim().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
