@@ -38,11 +38,15 @@ public class OpenAIController : MonoBehaviour {
     string environment_data_string;
 
     // Starting time
-    int time = 600;
+    int time_of_day = 0;
+    public TMP_Text time_display_text;
     const int time_increment = 100;
 
     void Start()
     {
+        ClearInstantiatedTiles();
+        // 1200 pm starting time
+        set_time_of_day(1200);
         // NOTE: Previous OpenAI Key
         string api_key = Environment.GetEnvironmentVariable("OPENAI_API_KEY", EnvironmentVariableTarget.User);
         if (string.IsNullOrWhiteSpace(api_key)) {
@@ -56,14 +60,40 @@ public class OpenAIController : MonoBehaviour {
         InitializeGame().ConfigureAwait(false);
     }
 
+    // Method to update the time variable (call this when time changes)
+    public void set_time_of_day(int new_time)
+    {
+        time_of_day = new_time;
+        if (time_of_day >= 2400)
+        {
+            time_of_day = 0;
+        }
+        update_time_display(); // Update the UI when the time changes
+    }
+
+    // Method to format and display the time on the UI
+    private void update_time_display()
+    {
+        if (time_display_text != null)
+        {
+            // Format the time (e.g., 1300 -> "13:00", 900 -> "9:00")
+            string hours = (time_of_day / 100).ToString("D2"); // Get hours (e.g., 13 from 1300)
+            string minutes = (time_of_day % 100).ToString("D2"); // Get minutes (e.g., 00 from 1300)
+            string formattedTime = $"{hours}:{minutes}";
+
+            // Set the text on the TMP_Text component
+            time_display_text.text = formattedTime;
+        }
+        else
+        {
+            Debug.LogError("time_display_text is not assigned!");
+        }
+    }
     private void increment_world_clock()
     {
-        time += 100;
-        if (time >= 2400)
-        {
-            time = 0;
-        }
-        Debug.Log(time);
+        int previous_time_of_day = time_of_day;
+        set_time_of_day(previous_time_of_day + time_increment);
+        Debug.Log(time_of_day);
     }
 
     private async Task InitializeGame()
@@ -320,7 +350,7 @@ public class OpenAIController : MonoBehaviour {
                 $"Environment Tile Data (JSON): {environment_data_string}\n" +
                 $"Original World Grid (without characters): {world_Grid_String}\n" +
                 $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
-                $"Current Time: {time}\n" +
+                $"Current Time: {time_of_day}\n" +
                 "Respond **ONLY** with the updated 10x10 grid. Use the format CharacterID,Task in cells with characters, and only the tile ID in cells without characters. " +
                 "Example format for a row: '101,fishing|002|003|102,building|...'";
 
