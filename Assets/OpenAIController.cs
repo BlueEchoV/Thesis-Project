@@ -92,8 +92,8 @@ public class OpenAIController : MonoBehaviour {
     private void increment_world_clock()
     {
         int previous_time_of_day = time_of_day;
+        // Increment the time of day
         set_time_of_day(previous_time_of_day + time_increment);
-        Debug.Log(time_of_day);
     }
 
     private async Task InitializeGame()
@@ -274,22 +274,30 @@ public class OpenAIController : MonoBehaviour {
 
         string world_Grid_String = GridToString(world_grid_global);
         string character_Grid_String = GridToString(character_Grid);
+
         string prompt =
-            "Instructions: Use the provided 'Character Data' to place each character on the Current World Grid " +
-            "by replacing a Walkable Tile with the appropriate character's ID. Don't place them on a water tile! " +
-            "Assign an appropriate task to each character based on the character description, back story, and environment. " +
-            "Only place characters on the specified Walkable Tiles as defined in the Environment Tile Data. " +
-            "If a cell does not contain a character, leave it as the environment tile ID only (e.g., '001'). " +
-            "Format the response as a 10x10 grid where cells containing characters use the format 'CharacterID,Task'. " +
+            "Instructions: Your task is to place characters on a 10x10 game grid based on their traits, environment, and time of day. " +
+            "Strictly follow these rules: \n" +
+            "- ONLY place characters on Walkable Tiles as defined in the Environment Tile Data. \n" +
+            "- NEVER place a character on a tile where 'Walkable' is FALSE. \n" +
+            "- If a tile is classified as 'Water', it is automatically NOT walkable. \n" +
+            "- Consider the Current Time when placing characters: \n" +
+            /*
+            "    * Daytime (06:00 - 18:00) -> Characters favor outdoor activities, fields, and market areas.\n" +
+            "    * Nighttime (18:00 - 06:00) -> Characters prefer indoor locations, camps, or resting spots.\n" +
+            "    * Certain characters (e.g., night guards, nocturnal creatures) may prefer nighttime outdoor placement.\n" +
+            */
+            "- Assign an appropriate task to each character based on their description, back story, and surroundings. \n" +
+            "- If a cell does not contain a character, leave it as the environment tile ID only (e.g., '001'). \n" +
+            "- Format the response as a 10x10 grid where cells containing characters use the format 'CharacterID,Task'. \n" +
             "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
 
             "'Character Data':\n" + character_data_string + "\n\n" +
+            "'Current Time': " + time_of_day + "\n\n" +
             "'Current World Grid':\n" + world_Grid_String + "\n\n" +
-            "'Walkable Tiles' are dynamically determined by tiles where 'Walkable: true' in the Environment Tile Data.\n" +
-            "DO NOT PLACE CHARACTERS ON TILES WHERE 'Walkable' IS FALSE IN THE 'Environment Tile Data'.\n" +
-            "'Environment Tile Data':\n" + environment_data_string + "\n\n" +
+            "'Walkable Tiles' (Tiles where 'Walkable' is TRUE):\n" + environment_data_string + "\n\n" +
             "'Back Story':\n" + backstory_global + ".\n\n" +
-            "Ensure that you do not place characters on any tiles where 'Walkable' is false in the Environment Tile Data.";
+            "Ensure that characters are placed logically and follow all rules above.";
 
         // TODO: Add more debug code here
 
@@ -678,6 +686,7 @@ public class OpenAIController : MonoBehaviour {
                 }
             });
 
+            increment_world_clock();
             // Return the text content of the response
             return chat_gpt_result;
         }
