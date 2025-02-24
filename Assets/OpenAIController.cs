@@ -117,20 +117,11 @@ public class OpenAIController : MonoBehaviour {
     public class EnvironmentData 
     {
         public string BackgroundStory { get; set; }
-        public FormatSpecification Format { get; set; }
         public List<EnvironmentTile> EnvironmentTiles { get; set; }
     }
     public class CharacterData {
-        public FormatSpecification Format { get; set; } 
         public List<Character> Characters { get; set; }
     }
-    public class FormatSpecification {
-        public string Type { get; set; }
-        public int Rows { get; set; }
-        public int Columns { get; set; }
-        public string Description { get; set; }
-    }
-
     public class EnvironmentTile
     {
         public string ObjectID { get; set; }
@@ -145,10 +136,9 @@ public class OpenAIController : MonoBehaviour {
         public string Type { get; set; }
         public string CharacterModelName { get; set; }
         public string Role { get; set; }
-        public string DayTasks { get; set; }
-        public string NightTasks { get; set; }
+        public List<string> DayTasks { get; set; }
+        public List<string> NightTasks { get; set; }
     }
-
     private EnvironmentData LoadEnvironmentDataFromJson(string file_path)
     {
         // Read the text from the specified file
@@ -212,17 +202,6 @@ public class OpenAIController : MonoBehaviour {
 
         return characterData;
     }
-        // Load the character JSON file
-    private FormatSpecification LoadFormatSpecificationFromJson(string file_path)
-    {
-        // Read the text from the specified file
-        string jsonContent = File.ReadAllText(file_path);
-
-        // Convert the text into a CharacterData object
-        var format_specification = JsonConvert.DeserializeObject<FormatSpecification>(jsonContent);
-
-        return format_specification;
-    }
 
     // NOTE: FIRST GENERATION PROMPT
     private async Task GenerateWorldWithChatGPT(string file_path)
@@ -234,11 +213,24 @@ public class OpenAIController : MonoBehaviour {
             Debug.Log("Back Story Global\n" + backstory_global);
             // NOTE: Convert the EnvironmentData type back into a json string
             environment_data_string = JsonConvert.SerializeObject(environment_data, Formatting.None);
+
             // For this prompt response, we only want it to generate the terrain (ignoring the character ids
             string prompt = 
-                "Instructions: Construct a grid using only the ObjectIDs from the JSON file provided. " +
-                "Respond only with the grid, formatted as described in the 'Format' section. " +
-                $"JSON File: {environment_data_string}";            
+                "Instructions: Construct the grid based on the description provided in the 'BackgroundStory' section " +
+                "of the environment_data.json file. Construct it using the tiles specified in the json file. Each " +
+                "EnvironmentTile has an associated ObjectID. Use this ObjectID in the construction of the grid. Make " +
+                "sure the 10x10 grid is represented in a text format suitable for parsing. Only provide the " +
+                "grid in your response. Format the grid as a table with 10 rows and 10 columns, " +
+                "where each cell contains a three-digit ObjectID of the tile which are provided in the " +
+                "'EnvironmentTiles' section. Separate each ID with a pipe '|' symbol and terminate each row " +
+                "with a newline character '\\n'" +
+                "Here is an example row: 001|001|001|001|001|001|001|001|001|001|" +
+
+                "\n\n" +
+                "environment_data.json: " + environment_data_string +
+                "\n\n" +
+
+                "Remember. ONLY respond with only the 10x10 grid.";
 
             Debug.Log("Prompt 1 - World Generation: \n" + prompt);
 
@@ -280,48 +272,26 @@ public class OpenAIController : MonoBehaviour {
             "Instructions: Place each character from the 'Characters' list in the provided JSON onto the 10x10 grid. " +
             "Follow these rules: " +
             " - Place characters only on walkable tiles as defined in the 'EnvironmentTiles' section of the " +
-                "environment JSON.Place characters on walkable tiles based on their roles and the environment. " +
+                "environment JSON. Place characters on walkable tiles based on their roles and the environment. " +
                 "If the 'walkable' variable is true, then the characters can be placed on those tiles. If the " +
                 "'walkable' variable is false, then the characters cannot be placed on those tiles." +
             " - Consider each character's 'Role' when deciding their placement. For example, place farmers on or " +
                 "near grass tiles, fishers near water tiles, etc." +
             " - Assign a task to each character based on their 'DayTasks' or 'NightTasks' list, depending on the " +
                 "current time of day." +
-            " - The current time is {time_of_day}. Assume day is 0600-1800 and night is 1800-0600." +
+            " - The current time is " + time_of_day + ". Assume day is 0600-1800 and night is 1800-0600." +
             " - Each character must occupy a unique tile." +
             " - For tiles without characters, use the environment tile ID from the world grid." +
             " - Format the response as a 10x10 grid: use 'CharacterID,Task' for cells with characters " +
                 "(e.g., '101,farming'), and the tile ID (e.g., '001') for others. Separate cells with '|' and " +
                 "end rows with '\n'." +
                 "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
-            "\n\n" +
-            " Character Data: {character_data_string}\n\n" +
-            " Environment Data: {environment_data_string}\n\n" +
-            " Current World Grid: {world_Grid_String}\n\n" +
-            " Current Time: {time_of_day}\n\n" +
-            "\n\n" +
-            " Respond only with the grid.";
 
-        /*
-        string prompt =
-            "Instructions: Your task is to place characters on a 10x10 game grid based on their traits, environment, and time of day. " +
-            "Strictly follow these rules: \n" +
-            "- ONLY place characters on Walkable Tiles as defined in the Environment Tile Data. \n" +
-            "- NEVER place a character on a tile where 'Walkable' is FALSE. \n" +
-            "- If a tile is classified as 'Water', it is automatically NOT walkable. \n" +
-            "- Consider the Current Time when placing characters: \n" +
-            "- Assign an appropriate task to each character based on their description, back story, and surroundings. \n" +
-            "- If a cell does not contain a character, leave it as the environment tile ID only (e.g., '001'). \n" +
-            "- Format the response as a 10x10 grid where cells containing characters use the format 'CharacterID,Task'. \n" +
-            "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
+            "Character Data: " + character_data_string + "\n\n" +
+            "Environment Data: " + environment_data_string + "\n\n" +
+            "Current World Grid: " + world_Grid_String + "\n\n" +
 
-            "'Character Data':\n" + character_data_string + "\n\n" +
-            "'Current Time': " + time_of_day + "\n\n" +
-            "'Current World Grid':\n" + world_Grid_String + "\n\n" +
-            "'Walkable Tiles' (Tiles where 'Walkable' is TRUE):\n" + environment_data_string + "\n\n" +
-            "'Back Story':\n" + backstory_global + ".\n\n" +
-            "Ensure that characters are placed logically and follow all rules above.";
-        */
+            "Remember, ONLY respond only with the grid.";
 
         // TODO: Add more debug code here
 
@@ -352,8 +322,6 @@ public class OpenAIController : MonoBehaviour {
     {
         // Construct the prompt with the static back story, current character_Grid, and character IDs
         // I destroy the previous grid here as well
-        FormatSpecification updating_format_specification = LoadFormatSpecificationFromJson(file_path_updating_placement);
-        string updating_format_specification_string = JsonConvert.SerializeObject(updating_format_specification , Formatting.None);
         // Debug.Log("updating_format_specification_string:\n" + updating_format_specification_string);
 
         string character_IDs = JsonConvert.SerializeObject(characters, Formatting.None);
@@ -368,6 +336,7 @@ public class OpenAIController : MonoBehaviour {
         {
             string character_Grid_String = GridToString(character_Grid);
 
+            /*
             string prompt =
                 "Update the character grid and assign the most suitable task to each character based on their type, environment context, and the current time of day. " +
                 "Consider the time (0-2400) when determining tasks (e.g., farmers work during the day but rest at night, guards patrol at night, etc.). " +
@@ -385,7 +354,34 @@ public class OpenAIController : MonoBehaviour {
                 $"Current Time: {time_of_day}\n" +
                 "Respond **ONLY** with the updated 10x10 grid. Use the format CharacterID,Task in cells with characters, and only the tile ID in cells without characters. " +
                 "Example format for a row: '101,fishing|002|003|102,building|...'";
+            */
 
+            string prompt =
+            "Instructions: Update each character from the 'Characters' list in the provided JSON onto the 10x10 grid. " +
+            "Follow these rules: " +
+            " - Place characters only on walkable tiles as defined in the 'EnvironmentTiles' section of the " +
+                "environment JSON. Place characters on walkable tiles based on their roles and the environment. " +
+                "If the 'walkable' variable is true, then the characters can be placed on those tiles. If the " +
+                "'walkable' variable is false, then the characters cannot be placed on those tiles." +
+            " - Consider each character's 'Role' when deciding their placement. For example, place farmers on or " +
+                "near grass tiles, fishers near water tiles, etc." +
+            " - Assign a task to each character based on their 'DayTasks' or 'NightTasks' list, depending on the " +
+                "current time of day." +
+            " - The current time is " + time_of_day + ". Assume day is 0600-1800 and night is 1800-0600." +
+            " - Each character must occupy a unique tile." +
+            " - For tiles without characters, use the environment tile ID from the world grid." +
+            " - Format the response as a 10x10 grid: use 'CharacterID,Task' for cells with characters " +
+                "(e.g., '101,farming'), and the tile ID (e.g., '001') for others. Separate cells with '|' and " +
+                "end rows with '\n'." +
+                "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
+
+            "Character ID's: " + character_IDs +
+            "Environment Tile Data (JSON): " + environment_data_string +
+            "Original World Grid (without characters): " + world_Grid_String +
+            "Current Character Grid (with characters on map): " + character_Grid_String +
+            "Current Time: " + time_of_day +
+
+            "Remember, ONLY respond only with the grid.";
 
             Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
 

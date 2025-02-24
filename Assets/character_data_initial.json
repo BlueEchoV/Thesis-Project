@@ -1,10 +1,4 @@
 {
-    "Format": {
-        "Type": "Grid",
-        "Rows": 10,
-        "Columns": 10,
-        "Description": "Place characters on walkable tiles based on their roles and the environment. If the 'walkable' variable is true, then the characters can be placed on those tiles. If the 'walkable' variable is false, then the characters cannot be placed on those tiles."
-    },
     "Characters": [
         {
             "ObjectID": "101",
