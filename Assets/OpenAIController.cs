@@ -144,8 +144,9 @@ public class OpenAIController : MonoBehaviour {
         public string ObjectID { get; set; }
         public string Type { get; set; }
         public string CharacterModelName { get; set; }
-        public string CharacterDescription { get; set; }
-        public string CurrentActivity { get; set; }
+        public string Role { get; set; }
+        public string DayTasks { get; set; }
+        public string NightTasks { get; set; }
     }
 
     private EnvironmentData LoadEnvironmentDataFromJson(string file_path)
@@ -235,7 +236,7 @@ public class OpenAIController : MonoBehaviour {
             environment_data_string = JsonConvert.SerializeObject(environment_data, Formatting.None);
             // For this prompt response, we only want it to generate the terrain (ignoring the character ids
             string prompt = 
-                "Instructions: Construct a 10x10 grid using only the ObjectIDs from the JSON file provided. " +
+                "Instructions: Construct a grid using only the ObjectIDs from the JSON file provided. " +
                 "Respond only with the grid, formatted as described in the 'Format' section. " +
                 $"JSON File: {environment_data_string}";            
 
@@ -276,17 +277,39 @@ public class OpenAIController : MonoBehaviour {
         string character_Grid_String = GridToString(character_Grid);
 
         string prompt =
+            "Instructions: Place each character from the 'Characters' list in the provided JSON onto the 10x10 grid. " +
+            "Follow these rules: " +
+            " - Place characters only on walkable tiles as defined in the 'EnvironmentTiles' section of the " +
+                "environment JSON.Place characters on walkable tiles based on their roles and the environment. " +
+                "If the 'walkable' variable is true, then the characters can be placed on those tiles. If the " +
+                "'walkable' variable is false, then the characters cannot be placed on those tiles." +
+            " - Consider each character's 'Role' when deciding their placement. For example, place farmers on or " +
+                "near grass tiles, fishers near water tiles, etc." +
+            " - Assign a task to each character based on their 'DayTasks' or 'NightTasks' list, depending on the " +
+                "current time of day." +
+            " - The current time is {time_of_day}. Assume day is 0600-1800 and night is 1800-0600." +
+            " - Each character must occupy a unique tile." +
+            " - For tiles without characters, use the environment tile ID from the world grid." +
+            " - Format the response as a 10x10 grid: use 'CharacterID,Task' for cells with characters " +
+                "(e.g., '101,farming'), and the tile ID (e.g., '001') for others. Separate cells with '|' and " +
+                "end rows with '\n'." +
+                "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
+            "\n\n" +
+            " Character Data: {character_data_string}\n\n" +
+            " Environment Data: {environment_data_string}\n\n" +
+            " Current World Grid: {world_Grid_String}\n\n" +
+            " Current Time: {time_of_day}\n\n" +
+            "\n\n" +
+            " Respond only with the grid.";
+
+        /*
+        string prompt =
             "Instructions: Your task is to place characters on a 10x10 game grid based on their traits, environment, and time of day. " +
             "Strictly follow these rules: \n" +
             "- ONLY place characters on Walkable Tiles as defined in the Environment Tile Data. \n" +
             "- NEVER place a character on a tile where 'Walkable' is FALSE. \n" +
             "- If a tile is classified as 'Water', it is automatically NOT walkable. \n" +
             "- Consider the Current Time when placing characters: \n" +
-            /*
-            "    * Daytime (06:00 - 18:00) -> Characters favor outdoor activities, fields, and market areas.\n" +
-            "    * Nighttime (18:00 - 06:00) -> Characters prefer indoor locations, camps, or resting spots.\n" +
-            "    * Certain characters (e.g., night guards, nocturnal creatures) may prefer nighttime outdoor placement.\n" +
-            */
             "- Assign an appropriate task to each character based on their description, back story, and surroundings. \n" +
             "- If a cell does not contain a character, leave it as the environment tile ID only (e.g., '001'). \n" +
             "- Format the response as a 10x10 grid where cells containing characters use the format 'CharacterID,Task'. \n" +
@@ -298,6 +321,7 @@ public class OpenAIController : MonoBehaviour {
             "'Walkable Tiles' (Tiles where 'Walkable' is TRUE):\n" + environment_data_string + "\n\n" +
             "'Back Story':\n" + backstory_global + ".\n\n" +
             "Ensure that characters are placed logically and follow all rules above.";
+        */
 
         // TODO: Add more debug code here
 
@@ -811,10 +835,8 @@ public class OpenAIController : MonoBehaviour {
 
         for (int i = 0; i < grid.GetLength(0); i++)
         {
-            Debug.Log(grid.GetLength(0));
             for (int j = 0; j < grid.GetLength(1); j++)
             {
-                Debug.Log(grid.GetLength(1));
                 string cellData = grid[i, j];
                 string characterId = cellData;
                 string task = null;
@@ -831,7 +853,7 @@ public class OpenAIController : MonoBehaviour {
                 GameObject prefab = GetPrefabById(characterId);
                 if (prefab != null)
                 {
-                        GameObject characterInstance = Instantiate(prefab, new Vector3(i, 0, j), Quaternion.identity);
+                    GameObject characterInstance = Instantiate(prefab, new Vector3(i, 0, j), Quaternion.identity);
                     characterInstance.transform.parent = environmentTile.transform;
 
                     // Assign the correct ID to avoid mismatches during the search
