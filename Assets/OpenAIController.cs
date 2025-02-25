@@ -40,7 +40,7 @@ public class OpenAIController : MonoBehaviour {
     // Starting time
     int time_of_day = 0;
     public TMP_Text time_display_text;
-    const int time_increment = 100;
+    const int time_increment = 400;
 
     void Start()
     {
@@ -74,20 +74,13 @@ public class OpenAIController : MonoBehaviour {
     // Method to format and display the time on the UI
     private void update_time_display()
     {
-        if (time_display_text != null)
-        {
-            // Format the time (e.g., 1300 -> "13:00", 900 -> "9:00")
-            string hours = (time_of_day / 100).ToString("D2"); // Get hours (e.g., 13 from 1300)
-            string minutes = (time_of_day % 100).ToString("D2"); // Get minutes (e.g., 00 from 1300)
-            string formattedTime = $"{hours}:{minutes}";
+        // Format the time (e.g., 1300 -> "13:00", 900 -> "9:00")
+        string hours = (time_of_day / 100).ToString("D2"); // Get hours (e.g., 13 from 1300)
+        string minutes = (time_of_day % 100).ToString("D2"); // Get minutes (e.g., 00 from 1300)
+        string formattedTime = $"{hours}:{minutes}";
 
-            // Set the text on the TMP_Text component
-            time_display_text.text = formattedTime;
-        }
-        else
-        {
-            Debug.LogError("time_display_text is not assigned!");
-        }
+        // Set the text on the TMP_Text component
+        time_display_text.text = formattedTime;
     }
     private void increment_world_clock()
     {
@@ -108,11 +101,7 @@ public class OpenAIController : MonoBehaviour {
         if (character_data_initial_file_path == null) {
             Debug.Log("ERROR: Filepath is null");
         }
-        string character_data_updating_file_path = Path.Combine(Application.dataPath, "character_data_updating.json");
-        if (character_data_updating_file_path == null) {
-            Debug.Log("ERROR: Filepath is null");
-        }
-        await PlaceCharactersInWorldAndUpdate(character_data_initial_file_path, character_data_updating_file_path); 
+        await PlaceCharactersInWorldAndUpdate(character_data_initial_file_path); 
     }
     public class EnvironmentData 
     {
@@ -259,7 +248,7 @@ public class OpenAIController : MonoBehaviour {
     }
 
     // NOTE: SECOND GENERATION PROMPT
-    private async Task PlaceCharactersInWorldAndUpdate(string file_path_initial_placement, string file_path_updating_placement)
+    private async Task PlaceCharactersInWorldAndUpdate(string file_path_initial_placement)
     {
         // Debug.Log("Inside PlaceCharactersInWorldCoroutine");
         CharacterData initial_placement = LoadCharacterDataFromJson(file_path_initial_placement);
@@ -284,7 +273,7 @@ public class OpenAIController : MonoBehaviour {
             " - For tiles without characters, use the environment tile ID from the world grid." +
             " - Format the response as a 10x10 grid: use 'CharacterID,Task' for cells with characters " +
                 "(e.g., '101,farming'), and the tile ID (e.g., '001') for others. Separate cells with '|' and " +
-                "end rows with '\n'." +
+                "end rows with '\\n'." +
                 "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
 
             "Character Data: " + character_data_string + "\n\n" +
@@ -313,12 +302,12 @@ public class OpenAIController : MonoBehaviour {
             // InstantiateGrid(character_Grid, 1);
 
             // Start a routine after the initial placement of the characters
-            StartCoroutine(UpdateCharacterPositionsCoroutine(file_path_updating_placement, initial_placement.Characters));
+            StartCoroutine(UpdateCharacterPositionsCoroutine(initial_placement.Characters));
         }
     }
 
     // NOTE: THIRD GENERATION PROMPT (RECURRING)
-    private IEnumerator UpdateCharacterPositionsCoroutine(string file_path_updating_placement, List<Character> characters)
+    private IEnumerator UpdateCharacterPositionsCoroutine(List<Character> characters)
     {
         // Construct the prompt with the static back story, current character_Grid, and character IDs
         // I destroy the previous grid here as well
@@ -336,52 +325,30 @@ public class OpenAIController : MonoBehaviour {
         {
             string character_Grid_String = GridToString(character_Grid);
 
-            /*
             string prompt =
-                "Update the character grid and assign the most suitable task to each character based on their type, environment context, and the current time of day. " +
-                "Consider the time (0-2400) when determining tasks (e.g., farmers work during the day but rest at night, guards patrol at night, etc.). " +
-                "Move each character one block in any walkable direction (up, down, left, or right) if possible, and assign a task using the format: " +
-                "CharacterID,Task. Ensure that tasks are meaningful based on the character’s type and the time of day. " +
-                "If a character can't move, keep them in their current position but still assign them a task. " +
-                "Replace any position a character moves from with the corresponding environment tile from the original world grid.\n\n" +
-                "Walkable Tile IDs: Tiles with 'Walkable: true' in the JSON environment data should be treated as walkable.\n" +
-                "DO NOT MOVE CHARACTERS ONTO TILES WHERE 'Walkable' IS FALSE IN THE 'Environment Tile Data'.\n\n" +
+                "Instructions: Update the positions and tasks of each character in the 'Current Character Grid' on " +
+                "the 10x10 grid. Follow these rules: \n" +
+                " - For each character in the 'Current Character Grid': \n" +
+                "   - Move them one block (up, down, left, or right) to a walkable tile if possible, based on the \n" +
+                    "'EnvironmentTiles' section of the environment JSON where 'Walkable' is true.\n" +
+                "   - If no walkable adjacent tile is available or the target is occupied, keep them in their " +
+                    "current position.\n" +
+                "   - Replace their previous position with the corresponding tile ID from the 'Original World Grid'.\n" +
+                " - Ensure each character occupies a unique tile.\n" +
+                " - Assign a task from their 'DayTasks' (0600-1800) or 'NightTasks' (1800-0600) list in the character " +
+                "JSON, based on the current time: " + time_of_day + ", and their 'Role' (e.g., farmers farm on grass, " +
+                "fishers fish near water).\n" +
+                " - For tiles without characters, use the tile ID from the 'Original World Grid'.\n" + 
+                " - Format the response as a 10x10 grid: 'CharacterID,Task' for cells with characters " +
+                    "(e.g., '101,farming'), and the tile ID (e.g., '001') otherwise. Separate cells with '|' " +
+                    "and end rows with '\\n'.\n\n" + 
 
-                $"Character ID's: {character_IDs}\n" +
-                $"Environment Tile Data (JSON): {environment_data_string}\n" +
-                $"Original World Grid (without characters): {world_Grid_String}\n" +
-                $"Current Character Grid (with characters on map): {character_Grid_String}\n" +
-                $"Current Time: {time_of_day}\n" +
-                "Respond **ONLY** with the updated 10x10 grid. Use the format CharacterID,Task in cells with characters, and only the tile ID in cells without characters. " +
-                "Example format for a row: '101,fishing|002|003|102,building|...'";
-            */
+                " Character Data: " + character_IDs + "\n\n" +
+                " Environment Data: " + environment_data_string + "\n\n" +
+                " Original World Grid: " + world_Grid_String + "\n\n" +
+                " Current Character Grid: " + character_Grid_String + "\n\n" +
 
-            string prompt =
-            "Instructions: Update each character from the 'Characters' list in the provided JSON onto the 10x10 grid. " +
-            "Follow these rules: " +
-            " - Place characters only on walkable tiles as defined in the 'EnvironmentTiles' section of the " +
-                "environment JSON. Place characters on walkable tiles based on their roles and the environment. " +
-                "If the 'walkable' variable is true, then the characters can be placed on those tiles. If the " +
-                "'walkable' variable is false, then the characters cannot be placed on those tiles." +
-            " - Consider each character's 'Role' when deciding their placement. For example, place farmers on or " +
-                "near grass tiles, fishers near water tiles, etc." +
-            " - Assign a task to each character based on their 'DayTasks' or 'NightTasks' list, depending on the " +
-                "current time of day." +
-            " - The current time is " + time_of_day + ". Assume day is 0600-1800 and night is 1800-0600." +
-            " - Each character must occupy a unique tile." +
-            " - For tiles without characters, use the environment tile ID from the world grid." +
-            " - Format the response as a 10x10 grid: use 'CharacterID,Task' for cells with characters " +
-                "(e.g., '101,farming'), and the tile ID (e.g., '001') for others. Separate cells with '|' and " +
-                "end rows with '\n'." +
-                "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
-
-            "Character ID's: " + character_IDs +
-            "Environment Tile Data (JSON): " + environment_data_string +
-            "Original World Grid (without characters): " + world_Grid_String +
-            "Current Character Grid (with characters on map): " + character_Grid_String +
-            "Current Time: " + time_of_day +
-
-            "Remember, ONLY respond only with the grid.";
+                " Respond only with the updated 10x10 grid.";
 
             Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
 
