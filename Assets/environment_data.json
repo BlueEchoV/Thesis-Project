@@ -1,5 +1,5 @@
 {
-   "BackgroundStory": "Create a grass area with a pond in it and one house.",
+   "BackgroundStory": "Create a grass area with a pond and some flowers surrounding the pond and one house anywhere you see fit.",
     "EnvironmentTiles": [
         {
             "ObjectID": "001",
@@ -22,6 +22,12 @@
         {
             "ObjectID": "004",
             "EnvironmentModelName": "House",
+            "Type": "Environment Tile",
+            "Walkable": false
+        },
+        {
+            "ObjectID": "005",
+            "EnvironmentModelName": "Flowers",
             "Type": "Environment Tile",
             "Walkable": false
         }

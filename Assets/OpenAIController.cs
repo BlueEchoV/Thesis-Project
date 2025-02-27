@@ -706,6 +706,7 @@ public class OpenAIController : MonoBehaviour {
     public GameObject civilianMan;
     public GameObject civilianWoman;
     public GameObject housePrefab;
+    public GameObject flowerPrefab;
     public GameObject environmentTile;
     public GameObject GetPrefabById(string id)
     {
@@ -716,6 +717,7 @@ public class OpenAIController : MonoBehaviour {
             case "002": return waterPrefab;
             case "003": return rockPrefab;
             case "004": return housePrefab;
+            case "005": return flowerPrefab;
             case "101": return civilianMan;
             case "102": return civilianWoman;
             default: return null;
