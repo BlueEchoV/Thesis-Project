@@ -1,5 +1,5 @@
 {
-   "BackgroundStory": "Create a grass area with a pond in it.",
+   "BackgroundStory": "Create a grass area with a pond in it and one house.",
     "EnvironmentTiles": [
         {
             "ObjectID": "001",
@@ -21,7 +21,7 @@
         },
         {
             "ObjectID": "004",
-            "EnvironmentModelName": "Market",
+            "EnvironmentModelName": "House",
             "Type": "Environment Tile",
             "Walkable": false
         }

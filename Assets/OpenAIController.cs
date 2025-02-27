@@ -174,7 +174,6 @@ public class OpenAIController : MonoBehaviour {
 
     }
 
-
     private CharacterData LoadCharacterDataFromJson(string file_path)
     {
         // Read the text from the specified file
@@ -706,7 +705,7 @@ public class OpenAIController : MonoBehaviour {
     public GameObject rockPrefab;
     public GameObject civilianMan;
     public GameObject civilianWoman;
-    public GameObject marketPrefab;
+    public GameObject housePrefab;
     public GameObject environmentTile;
     public GameObject GetPrefabById(string id)
     {
@@ -716,7 +715,7 @@ public class OpenAIController : MonoBehaviour {
             case "001": return grassPrefab;
             case "002": return waterPrefab;
             case "003": return rockPrefab;
-            case "004": return marketPrefab;
+            case "004": return housePrefab;
             case "101": return civilianMan;
             case "102": return civilianWoman;
             default: return null;
