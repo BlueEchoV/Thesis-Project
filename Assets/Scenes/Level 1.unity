@@ -521,7 +521,8 @@ MonoBehaviour:
   rockPrefab: {fileID: 6591561313349374617, guid: fb143d703f4e868439ad70a0831a9b09, type: 3}
   civilianMan: {fileID: 8237986657329137817, guid: 0b7410b4f82c4d64eb36995880d80c94, type: 3}
   civilianWoman: {fileID: 8237986657329137817, guid: d03ca00d2268b0240806eda3dc344c69, type: 3}
-  marketPrefab: {fileID: 7991480308045853302, guid: 75b597ab94dbf7f449f74957d556de2a, type: 3}
+  housePrefab: {fileID: 100000, guid: f90e0ed994ef3b44d9c14c521239006b, type: 3}
+  flowerPrefab: {fileID: 7991480308045853302, guid: 9a6498a7cd657ef4dbca11badc035b19, type: 3}
   environmentTile: {fileID: 2067234813}
 --- !u!4 &777073245
 Transform:
