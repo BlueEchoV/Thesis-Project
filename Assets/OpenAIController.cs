@@ -257,29 +257,24 @@ public class OpenAIController : MonoBehaviour {
         string character_Grid_String = GridToString(character_Grid);
 
         string prompt =
-            "Instructions: Place each character from the 'Characters' list in the provided JSON onto the 10x10 grid. " +
-            "Follow these rules: " +
-            " - Place characters only on walkable tiles as defined in the 'EnvironmentTiles' section of the " +
-                "environment JSON. Place characters on walkable tiles based on their roles and the environment. " +
-                "If the 'walkable' variable is true, then the characters can be placed on those tiles. If the " +
-                "'walkable' variable is false, then the characters cannot be placed on those tiles." +
-            " - Consider each character's 'Role' when deciding their placement. For example, place farmers on or " +
-                "near grass tiles, fishers near water tiles, etc." +
-            " - Assign a task to each character based on their 'DayTasks' or 'NightTasks' list, depending on the " +
-                "current time of day." +
-            " - The current time is " + time_of_day + ". Assume day is 0600-1800 and night is 1800-0600." +
-            " - Each character must occupy a unique tile." +
-            " - For tiles without characters, use the environment tile ID from the world grid." +
-            " - Format the response as a 10x10 grid: use 'CharacterID,Task' for cells with characters " +
-                "(e.g., '101,farming'), and the tile ID (e.g., '001') for others. Separate cells with '|' and " +
-                "end rows with '\\n'." +
-                "Here is an example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
+            "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique walkable tiles in the 10x10 grid, considering their roles and the environment. Follow these rules:\n" +
+            " - **Placement**: Place characters only on tiles where 'Walkable' is true in the 'EnvironmentTiles' section of the environment JSON.\n" +
+            "   - Match placement to each character's 'Role': e.g., farmers on or near grass tiles (e.g., '001'), fishers near water tiles (e.g., '002').\n" +
+            " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
+            "   - The current time is " + time_of_day + ".\n" +
+            " - **Uniqueness**: Ensure each character occupies a unique tile.\n" +
+            " - **Grid Update**: For tiles without characters, use the tile ID from the 'Current World Grid'.\n" +
+            " - **Format**: Respond with a 10x10 grid where:\n" +
+            "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
+            "   - Cells without characters are the tile ID (e.g., '001').\n" +
+            "   - Separate cells with '|' and end rows with '\\n'.\n" +
+            "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
 
             "Character Data: " + character_data_string + "\n\n" +
             "Environment Data: " + environment_data_string + "\n\n" +
             "Current World Grid: " + world_Grid_String + "\n\n" +
 
-            "Remember, ONLY respond only with the grid.";
+            "Respond only with the grid.";
 
         // TODO: Add more debug code here
 
@@ -325,29 +320,34 @@ public class OpenAIController : MonoBehaviour {
             string character_Grid_String = GridToString(character_Grid);
 
             string prompt =
-                "Instructions: Update the positions and tasks of each character in the 'Current Character Grid' on " +
-                "the 10x10 grid. Follow these rules: \n" +
-                " - For each character in the 'Current Character Grid': \n" +
-                "   - Move them one block (up, down, left, or right) to a walkable tile if possible, based on the \n" +
-                    "'EnvironmentTiles' section of the environment JSON where 'Walkable' is true.\n" +
-                "   - If no walkable adjacent tile is available or the target is occupied, keep them in their " +
-                    "current position.\n" +
-                "   - Replace their previous position with the corresponding tile ID from the 'Original World Grid'.\n" +
-                " - Ensure each character occupies a unique tile.\n" +
-                " - Assign a task from their 'DayTasks' (0600-1800) or 'NightTasks' (1800-0600) list in the character " +
-                "JSON, based on the current time: " + time_of_day + ", and their 'Role' (e.g., farmers farm on grass, " +
-                "fishers fish near water).\n" +
-                " - For tiles without characters, use the tile ID from the 'Original World Grid'.\n" + 
-                " - Format the response as a 10x10 grid: 'CharacterID,Task' for cells with characters " +
-                    "(e.g., '101,farming'), and the tile ID (e.g., '001') otherwise. Separate cells with '|' " +
-                    "and end rows with '\\n'.\n\n" + 
-
-                " Character Data: " + character_IDs + "\n\n" +
-                " Environment Data: " + environment_data_string + "\n\n" +
-                " Original World Grid: " + world_Grid_String + "\n\n" +
-                " Current Character Grid: " + character_Grid_String + "\n\n" +
-
-                " Respond only with the updated 10x10 grid.";
+                "Instructions: Update the positions and tasks of each character in the 'Current Character Grid' " +
+                "on a 10x10 grid. Follow these rules:\n" +
+                " - **Movement**: For each character in the 'Current Character Grid':\n" +
+                "   - Attempt to move them one block (up, down, left, or right) to an adjacent tile that is walkable " +
+                "(where 'Walkable' is true in 'EnvironmentTiles') and not occupied by another character.\n" +
+                "   - If a valid move is possible, move the character and replace their previous position with the " +
+                "tile ID from the 'Original World Grid'. If no valid move is available, keep them in their current" +
+                " position.\n" +
+                "   - Ensure all characters occupy unique tiles after movement.\n" +
+                " - **Tasks**: Assign each character a task based on their 'Role' and the tile they are on or adjacent " +
+                "to:\n" +
+                "   - Use 'DayTasks' if the current time (" + time_of_day + ") is 0600-1759, or 'NightTasks' if " +
+                "1800-0559.\n" +
+                "   - Example: Farmers get 'farming' on grass tiles, fishers get 'fishing' near water tiles.\n" +
+                " - **Grid Update**: For tiles without characters, use the tile ID from the 'Original World Grid'.\n" +
+                " - **Format**: Respond only with a 10x10 grid where:\n" +
+                "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
+                "   - Cells without characters are the tile ID (e.g., '001').\n" +
+                "   - Separate cells with '|' and end rows with '\\n'.\n" +
+                " - **Note**: Input grids ('Original World Grid' and 'Current Character Grid') are space-separated, " +
+                "but the response must use '|'.\n\n" +
+                
+                "Character Data: " + character_IDs + "\n\n" +
+                "Environment Data: " + environment_data_string + "\n\n" +
+                "Original World Grid: " + world_Grid_String + "\n\n" +
+                "Current Character Grid: " + character_Grid_String + "\n\n" +
+                
+                "Respond only with the updated 10x10 grid.";
 
             Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
 
@@ -562,6 +562,12 @@ public class OpenAIController : MonoBehaviour {
             {
                 // Split the line into cells by the pipe character
                 string[] cells = lines[i].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                if (cells.Length == 1)
+                {
+                    // The grid may not be separated by a '|', but a space ' '
+                    // instead
+                    cells = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                }
 
                 // Check that we have 10 cells in each line
                 if (cells.Length == grid_width)
@@ -594,7 +600,7 @@ public class OpenAIController : MonoBehaviour {
             // Debug.LogError("**************************************************************");
             // Now I have a character_Grid with IDs, you can instantiate game objects or tiles based on these IDs
             character_Grid = grid;
-            // PrintGridToDebug("New Character Grid", character_Grid);
+            PrintGridToDebug("New Character Grid", character_Grid);
             InstantiateCharacterGridPrefabs(grid, 0);
         }
         else
