@@ -257,23 +257,32 @@ public class OpenAIController : MonoBehaviour {
         string character_Grid_String = GridToString(character_Grid);
 
         string prompt =
-            "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique walkable tiles in the 10x10 grid, considering their roles and the environment. Follow these rules:\n" +
-            " - **Placement**: Place characters only on tiles where 'Walkable' is true in the 'EnvironmentTiles' section of the environment JSON.\n" +
-            "   - Match placement to each character's 'Role': e.g., farmers on or near grass tiles (e.g., '001'), fishers near water tiles (e.g., '002').\n" +
-            " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
+            "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique " +
+            "positions in the 10x10 grid where the current tile ID in the 'Current World Grid' corresponds to " +
+            "a walkable tile (i.e., 'Walkable': true in 'EnvironmentTiles'). Consider their roles and the environment " +
+            "when choosing positions. Follow these rules:\n" +
+            " - **Placement**:\n" +
+            "   - Select positions (i,j) where the tile ID at grid[i][j] is walkable, as defined in " +
+            "'EnvironmentTiles'.\n" +
+            "   - Match the position to the character's 'Role':\n" +
+            "     - Place farmers directly on grass tiles (e.g., '001').\n" +
+            "     - Place fishers on walkable tiles adjacent to water tiles (e.g., '002').\n" +
+            "   - Ensure no two characters occupy the same position.\n" +
+            " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time " +
+            "is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
             "   - The current time is " + time_of_day + ".\n" +
-            " - **Uniqueness**: Ensure each character occupies a unique tile.\n" +
-            " - **Grid Update**: For tiles without characters, use the tile ID from the 'Current World Grid'.\n" +
+            " - **Grid Update**: For positions without characters, use the tile ID from the 'Current World Grid'.\n" +
             " - **Format**: Respond with a 10x10 grid where:\n" +
             "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
             "   - Cells without characters are the tile ID (e.g., '001').\n" +
             "   - Separate cells with '|' and end rows with '\\n'.\n" +
-            "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n\n" +
-
+            "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n" +
+            "**Important**: Do not place characters on non-walkable tiles (e.g., '002', '004', '005'). For roles " +
+            "requiring proximity to certain tiles (e.g., fishers near water), place them on adjacent walkable " +
+            "tiles, not on the non-walkable tiles themselves.\n\n" +
             "Character Data: " + character_data_string + "\n\n" +
             "Environment Data: " + environment_data_string + "\n\n" +
             "Current World Grid: " + world_Grid_String + "\n\n" +
-
             "Respond only with the grid.";
 
         // TODO: Add more debug code here
