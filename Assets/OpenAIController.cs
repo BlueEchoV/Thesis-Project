@@ -38,7 +38,7 @@ public class OpenAIController : MonoBehaviour {
     string environment_data_string;
 
     // Starting time
-    int time_of_day = 0;
+    public int time_of_day = 0;
     public TMP_Text time_display_text;
     const int time_increment = 400;
 
