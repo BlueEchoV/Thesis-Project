@@ -46,7 +46,7 @@ public class OpenAIController : MonoBehaviour {
     {
         ClearInstantiatedTiles();
         // 1200 pm starting time
-        set_time_of_day(1200);
+        set_time_of_day(1600);
         // NOTE: Previous OpenAI Key
         string api_key = Environment.GetEnvironmentVariable("OPENAI_API_KEY", EnvironmentVariableTarget.User);
         if (string.IsNullOrWhiteSpace(api_key)) {

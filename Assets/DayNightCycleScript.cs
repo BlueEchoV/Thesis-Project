@@ -10,7 +10,7 @@ public class DayNightCycle : MonoBehaviour
     public Color morningColor = new Color(1.0f, 0.5f, 0.3f); // Warm sunrise color
     public Color dayColor = Color.white; // Bright daylight
     public Color eveningColor = new Color(1.0f, 0.5f, 0.3f); // Sunset color
-    public Color nightColor = new Color(0.1f, 0.1f, 0.3f); // Dark blue night
+    public Color nightColor = new Color(0.5f, 0.5f, 1.0f); // Bright moonlight blue
 
     void Start()
     {
@@ -31,7 +31,15 @@ public class DayNightCycle : MonoBehaviour
     void RotateSun(int time)
     {
         float normalizedTime = (time % 2400) / 2400f; // Convert time to 0-1 range
-        float sunAngle = Mathf.Lerp(-90, 270, normalizedTime); // Map to -90° to 270°
+        
+        // Reset light source at night to match the sunrise position
+        float sunAngle;
+        if (time < 600) // Early morning (before sunrise)
+            sunAngle = Mathf.Lerp(-90, 0, normalizedTime * 4);
+        else if (time > 1800) // Nighttime (moonlight)
+            sunAngle = Mathf.Lerp(180, 270, (normalizedTime - 0.75f) * 4);
+        else // Regular daytime rotation
+            sunAngle = Mathf.Lerp(0, 180, (normalizedTime - 0.25f) * 4);
 
         sunLight.transform.rotation = Quaternion.Euler(sunAngle, 0, 0);
     }
@@ -40,18 +48,18 @@ public class DayNightCycle : MonoBehaviour
     {
         float normalizedTime = (time % 2400) / 2400f;
 
-        // Adjust intensity and ambient lighting
-        if (time < 600 || time > 1800) // Nighttime
+        // Adjust lighting for a bright night with moonlight
+        if (time < 600 || time > 1800) // Nighttime (Moonlight)
         {
-            sunLight.intensity = Mathf.Lerp(0.2f, 0.0f, Mathf.InverseLerp(1800, 2400, time) + Mathf.InverseLerp(0, 600, time));
-            RenderSettings.ambientIntensity = 0.2f;
-            sunLight.color = Color.Lerp(eveningColor, nightColor, normalizedTime);
+            sunLight.intensity = 1.0f; // Just as bright as daytime
+            RenderSettings.ambientIntensity = 1.0f; // Keep ambient light bright
+            sunLight.color = nightColor; // Set moonlight color
         }
-        else // Daytime
+        else // Daytime (Sunlight)
         {
-            sunLight.intensity = Mathf.Lerp(0.2f, 1.0f, Mathf.InverseLerp(600, 1200, time));
-            RenderSettings.ambientIntensity = Mathf.Lerp(0.2f, 1.0f, Mathf.InverseLerp(600, 1200, time));
-
+            sunLight.intensity = 1.0f; // Keep same brightness
+            RenderSettings.ambientIntensity = 1.0f;
+            
             if (time < 900) // Morning transition
                 sunLight.color = Color.Lerp(morningColor, dayColor, Mathf.InverseLerp(600, 900, time));
             else if (time > 1500) // Evening transition
