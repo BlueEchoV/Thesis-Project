@@ -219,7 +219,7 @@ public class OpenAIController : MonoBehaviour {
 
                 environment_data_string +
 
-                "Respond with on the 10x10 grid in the format specified.";
+                "Respond only with the 10x10 grid in the format specified.";
 
             /*
             string prompt = 
@@ -273,7 +273,6 @@ public class OpenAIController : MonoBehaviour {
         CharacterData initial_placement = LoadCharacterDataFromJson(file_path_initial_placement);
         string character_data_string = JsonConvert.SerializeObject(initial_placement, Formatting.None);
         string world_Grid_String = GridToString(world_grid_global);
-        string character_Grid_String = GridToString(character_Grid);
 
         /*
         */
@@ -301,8 +300,10 @@ public class OpenAIController : MonoBehaviour {
             "make sure and use a task that is from the 'NightTasks' section of the character_data.json file provided below" +
             "and if there are multiple tasks specified in the 'NightTasks' section of the character_data.json file provided below," +
             "pick one that is most relevant to the given situation and position of the character in the current " +
-            "world. Separate each ID with a pipe '|' symbol and terminate each row with a newline character Here is a example " +
-            "row for your reference: 001|001|001|101,farming|001|001|001|001|001|001|\n. " +
+            "world. Separate each ID with a pipe '|' symbol and terminate each row with a newline character. Make sure you only " +
+            "provide the 10x10 grid of ObjectIDs that are separated by the pipe '|' symbol and terminated each row with a " +
+            "newline character in your response. Here is a example row for your reference: " +
+            "001|001|001|101,farming|001|001|001|001|001|001|.\n " +
 
             "Here is the environment_data.json file:\n" +
             environment_data_string + "\n\n" +
@@ -313,7 +314,7 @@ public class OpenAIController : MonoBehaviour {
             "Here is the current_world_grid:\n" + 
             world_Grid_String + "\n\n" +
 
-            "Respond with on the 10x10 grid in the format specified.";
+            "Respond only with the 10x10 grid in the format specified.";
 
         /*
         string prompt =
@@ -366,94 +367,146 @@ public class OpenAIController : MonoBehaviour {
             // InstantiateGrid(character_Grid, 1);
 
             // Start a routine after the initial placement of the characters
-            StartCoroutine(UpdateCharacterPositionsCoroutine(initial_placement.Characters));
+            StartCoroutine(UpdateCharacterPositionsCoroutine(file_path_initial_placement));
         }
     }
 
     // NOTE: THIRD GENERATION PROMPT (RECURRING)
-    private IEnumerator UpdateCharacterPositionsCoroutine(List<Character> characters)
+    private IEnumerator UpdateCharacterPositionsCoroutine(string file_path_initial_placement)
     {
-        // Construct the prompt with the static back story, current character_Grid, and character IDs
-        // I destroy the previous grid here as well
         // Debug.Log("updating_format_specification_string:\n" + updating_format_specification_string);
 
-        string character_IDs = JsonConvert.SerializeObject(characters, Formatting.None);
-        // Debug.Log("Character_IDs\n" + character_IDs);
+        CharacterData initial_placement = LoadCharacterDataFromJson(file_path_initial_placement);
+        string character_data_string = JsonConvert.SerializeObject(initial_placement, Formatting.None);
 
+        string character_Grid_String = GridToString(character_Grid);
         string world_Grid_String = GridToString(world_grid_global);
+
+        // Debug.Log("Character_IDs\n" + character_IDs);
 
         // Start count at 3 because of two prompts prior
         int count = 3;
         // GAMELOOP
         while (true)
         {
-            string character_Grid_String = GridToString(character_Grid);
-
+                
             string prompt =
-                "Instructions: Update the positions and tasks of each character in the 'Current Character Grid' " +
-                "on a 10x10 grid. Follow these rules:\n" +
-                " - **Movement**: For each character in the 'Current Character Grid':\n" +
-                "   - Attempt to move them one block (up, down, left, or right) to an adjacent tile that is walkable " +
-                "(where 'Walkable' is true in 'EnvironmentTiles') and not occupied by another character.\n" +
-                "   - If a valid move is possible, move the character and replace their previous position with the " +
-                "tile ID from the 'Original World Grid'. If no valid move is available, keep them in their current" +
-                " position.\n" +
-                "   - Ensure all characters occupy unique tiles after movement.\n" +
-                " - **Tasks**: Assign each character a task based on their 'Role' and the tile they are on or adjacent " +
-                "to:\n" +
-                "   - Use 'DayTasks' if the current time (" + time_of_day + ") is 0600-1759, or 'NightTasks' if " +
-                "1800-0559.\n" +
-                "   - Example: Farmers get 'farming' on grass tiles, fishers get 'fishing' near water tiles.\n" +
-                " - **Grid Update**: For tiles without characters, use the tile ID from the 'Original World Grid'.\n" +
-                " - **Format**: Respond only with a 10x10 grid where:\n" +
-                "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
-                "   - Cells without characters are the tile ID (e.g., '001').\n" +
-                "   - Separate cells with '|' and end rows with '\\n'.\n" +
-                " - **Note**: Input grids ('Original World Grid' and 'Current Character Grid') are space-separated, " +
-                "but the response must use '|'.\n\n" +
-                
-                "Character Data: " + character_IDs + "\n\n" +
-                "Environment Data: " + environment_data_string + "\n\n" +
-                "Original World Grid: " + world_Grid_String + "\n\n" +
-                "Current Character Grid: " + character_Grid_String + "\n\n" +
-                
-                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'" +
-                "Respond only with the 10x10 grid.";
+                "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
+                "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
+                "to represent EnvironmentTiles. The EnvironmentTiles and their associated ObjectIDs are located " +
+                "in the environment_data.json file provided below. Also below, I've included the current_character_grid which " +
+                "shows the current position of the players inside of the current_world_grid. When a character is moved on the map," +
+                "they replace the ObjectID of the EnvironmentTile's ObjectIDs. Your task is to update the positions and the roles " +
+                "of the characters in the map. When updating the positions of the characters, make sure you only move the characters " +
+                "one tile " +
+                "in any direction of your choosing (North, South, East, West). The character_data.json file contains information " +
+                "about the characters. When moving the characters. Please move them in a relevant direction, if applicable, based " +
+                "off what their task is and based off the BackgroundStory that is specified in the environment_data.json file that " +
+                "is specified below. When moving a character, make sure to replace the EnviromentalTile's ObjectID that the character " +
+                "is moving to with the ObjectID of the character that is moving. Each " +
+                "EnvironmentTile in the environment_data.json file provided below has a variable called 'walkable' which indicates " +
+                "whether or a not a character's ObjectID can replace a EnvironmentTile's objectID. Make sure the " +
+                "EnvironmentTile's 'walkable' variable is set to true before you replace the EnvironmentTile's " +
+                "ObjectID with the character's ObjectID. If the EnvironmentalTile's 'walkable' variable is false, " +
+                "then that means the character's ObjectID cannot replace the EnvironmentTile's ObjectID. In addition " +
+                "to that, I would like you to also specify a role for that character in this format: " +
+                "'CharacterID,Task' (e.g., '101,farming'). Make sure the role you specify for each character " +
+                "is a role that is explicitly stated in the 'DayTasks' section of the character_data.json provided below or the " +
+                "'NightTasks' section of the character_data.json provided below for the associated character you are placing. " +
+                "The current time is " + time_of_day + ". If the time is between 0600 and 1759, make sure and use a " +
+                "task that is from the 'DayTasks' section and if there are multiple tasks specified in the 'DayTasks' " +
+                "section of the character_data.json provided below file, pick one that is most relevant to the given situation and " +
+                "position of the character in the current world. If the time is between 1800 and 0559, " +
+                "make sure and use a task that is from the 'NightTasks' section of the character_data.json file provided below" +
+                "and if there are multiple tasks specified in the 'NightTasks' section of the character_data.json file provided below," +
+                "pick one that is most relevant to the given situation and position of the character in the current " +
+                "world. Separate each ID with a pipe '|' symbol and terminate each row with a newline character. Make sure you only " +
+                "provide the 10x10 grid of ObjectIDs that are separated by the pipe '|' symbol and terminated each row with a " +
+                "newline character in your response. Here is a example row for your reference: " +
+                "001|001|001|101,farming|001|001|001|001|001|001|.\n " +
 
-            Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
+                "Here is the environment_data.json file:\n" +
+                environment_data_string + "\n\n" +
 
-            // Send the prompt to ChatGPT
-            Task<ChatResult> chat_gpt_response = SendPromptToChatGPT(prompt);
+                "Here is the character_data.json file:\n" +
+                character_data_string + "\n\n" +
 
-            // PrintGridToDebug(character_Grid);
-            // Loop through and erase the current character world grid
-            for (int i = 0; i < character_Grid.GetLength(0); i++)
-            {
-                for (int j = 0; j < character_Grid.GetLength(1); j++)
+                "Here is the current_character_grid:\n" +
+                character_Grid_String + "\n\n" +
+
+                "Here is the current_world_grid:\n" + 
+                world_Grid_String + "\n\n" +
+
+                "Respond only with the 10x10 grid in the format specified.";
+
+
+                /*
+                string prompt =
+                    "Instructions: Update the positions and tasks of each character in the 'Current Character Grid' " +
+                    "on a 10x10 grid. Follow these rules:\n" +
+                    " - **Movement**: For each character in the 'Current Character Grid':\n" +
+                    "   - Attempt to move them one block (up, down, left, or right) to an adjacent tile that is walkable " +
+                    "(where 'Walkable' is true in 'EnvironmentTiles') and not occupied by another character.\n" +
+                    "   - If a valid move is possible, move the character and replace their previous position with the " +
+                    "tile ID from the 'Original World Grid'. If no valid move is available, keep them in their current" +
+                    " position.\n" +
+                    "   - Ensure all characters occupy unique tiles after movement.\n" +
+                    " - **Tasks**: Assign each character a task based on their 'Role' and the tile they are on or adjacent " +
+                    "to:\n" +
+                    "   - Use 'DayTasks' if the current time (" + time_of_day + ") is 0600-1759, or 'NightTasks' if " +
+                    "1800-0559.\n" +
+                    "   - Example: Farmers get 'farming' on grass tiles, fishers get 'fishing' near water tiles.\n" +
+                    " - **Grid Update**: For tiles without characters, use the tile ID from the 'Original World Grid'.\n" +
+                    " - **Format**: Respond only with a 10x10 grid where:\n" +
+                    "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
+                    "   - Cells without characters are the tile ID (e.g., '001').\n" +
+                    "   - Separate cells with '|' and end rows with '\\n'.\n" +
+                    " - **Note**: Input grids ('Original World Grid' and 'Current Character Grid') are space-separated, " +
+                    "but the response must use '|'.\n\n" +
+                    
+                    "Character Data: " + character_IDs + "\n\n" +
+                    "Environment Data: " + environment_data_string + "\n\n" +
+                    "Original World Grid: " + world_Grid_String + "\n\n" +
+                    "Current Character Grid: " + character_Grid_String + "\n\n" +
+                    
+                    "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'" +
+                    "Respond only with the 10x10 grid.";
+                */
+
+                Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
+
+                // Send the prompt to ChatGPT
+                Task<ChatResult> chat_gpt_response = SendPromptToChatGPT(prompt);
+
+                // PrintGridToDebug(character_Grid);
+                // Loop through and erase the current character world grid
+                for (int i = 0; i < character_Grid.GetLength(0); i++)
                 {
-                    character_Grid[i, j] = "";
+                    for (int j = 0; j < character_Grid.GetLength(1); j++)
+                    {
+                        character_Grid[i, j] = "";
+                    }
                 }
-            }
-            // PrintGridToDebug(character_Grid);
+                // PrintGridToDebug(character_Grid);
 
-            // Wait until the task is completed (Lambda)
-            yield return new WaitUntil(() => chat_gpt_response.IsCompleted);
+                // Wait until the task is completed (Lambda)
+                yield return new WaitUntil(() => chat_gpt_response.IsCompleted);
 
-            // Process the response
-            if (chat_gpt_response.Status == TaskStatus.RanToCompletion)
-            {
-                var chat_gpt_result = chat_gpt_response.Result;
-                Debug.Log("Response " + count + ": Character Placement\n" + chat_gpt_result);
+                // Process the response
+                if (chat_gpt_response.Status == TaskStatus.RanToCompletion)
+                {
+                    var chat_gpt_result = chat_gpt_response.Result;
+                    Debug.Log("Response " + count + ": Character Placement\n" + chat_gpt_result);
 
-                InstantiateCharacterGrid(chat_gpt_result.Choices[0].Message.TextContent);
-                PrintGridToDebug("Instantiation " + count + ": Character Grid Initial", character_Grid);
-            }
+                    InstantiateCharacterGrid(chat_gpt_result.Choices[0].Message.TextContent);
+                    PrintGridToDebug("Instantiation " + count + ": Character Grid Initial", character_Grid);
+                }
 
-            count++;
+                count++;
 
-            // InstantiateGrid(character_Grid, 1);
-            // Wait for a specified period before updating again
-            yield return new WaitForSeconds(5f);
+                // InstantiateGrid(character_Grid, 1);
+                // Wait for a specified period before updating again
+                yield return new WaitForSeconds(5f);
         }
     }
 
