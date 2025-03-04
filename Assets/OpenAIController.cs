@@ -274,8 +274,7 @@ public class OpenAIController : MonoBehaviour {
         string character_data_string = JsonConvert.SerializeObject(initial_placement, Formatting.None);
         string world_Grid_String = GridToString(world_grid_global);
 
-        /*
-        */
+        string formatted_time = time_of_day.ToString("D4");
 
         string prompt =
             "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
@@ -293,7 +292,7 @@ public class OpenAIController : MonoBehaviour {
             "'CharacterID,Task' (e.g., '101,farming'). Make sure the role you specify for each character " +
             "is a role that is explicitly stated in the 'DayTasks' section of the character_data.json provided below or the " +
             "'NightTasks' section of the character_data.json provided below for the associated character you are placing. " +
-            "The current time is " + time_of_day + ". If the time is between 0600 and 1759, make sure and use a " +
+            "The current time is " + formatted_time + ". If the time is between 0600 and 1759, make sure and use a " +
             "task that is from the 'DayTasks' section and if there are multiple tasks specified in the 'DayTasks' " +
             "section of the character_data.json provided below file, pick one that is most relevant to the given situation and " +
             "position of the character in the current world. If the time is between 1800 and 0559, " +
@@ -382,6 +381,8 @@ public class OpenAIController : MonoBehaviour {
         string character_Grid_String = GridToString(character_Grid);
         string world_Grid_String = GridToString(world_grid_global);
 
+        string formatted_time = time_of_day.ToString("D4");
+
         // Debug.Log("Character_IDs\n" + character_IDs);
 
         // Start count at 3 because of two prompts prior
@@ -413,7 +414,7 @@ public class OpenAIController : MonoBehaviour {
                 "'CharacterID,Task' (e.g., '101,farming'). Make sure the role you specify for each character " +
                 "is a role that is explicitly stated in the 'DayTasks' section of the character_data.json provided below or the " +
                 "'NightTasks' section of the character_data.json provided below for the associated character you are placing. " +
-                "The current time is " + time_of_day + ". If the time is between 0600 and 1759, make sure and use a " +
+                "The current time is " + formatted_time + ". If the time is between 0600 and 1759, make sure and use a " +
                 "task that is from the 'DayTasks' section and if there are multiple tasks specified in the 'DayTasks' " +
                 "section of the character_data.json provided below file, pick one that is most relevant to the given situation and " +
                 "position of the character in the current world. If the time is between 1800 and 0559, " +
