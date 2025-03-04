@@ -212,7 +212,9 @@ public class OpenAIController : MonoBehaviour {
                 "to a specific tile type. Make sure the 10x10 grid is represented in a text format suitable for " +
                 "parsing. Only provide the grid in your response, with no additional text or artifacts. Format " +
                 "the grid as a table with 10 rows and 10 columns, where each cell contains the three-digit ObjectID " +
-                "of the corresponding tile. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\n" +
+                "of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a " +
+                "newline character '\\n'. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\n" +
+
                 "Here is the environment_data.json file:\n" +
 
                 environment_data_string +
@@ -270,10 +272,50 @@ public class OpenAIController : MonoBehaviour {
         // Debug.Log("Inside PlaceCharactersInWorldCoroutine");
         CharacterData initial_placement = LoadCharacterDataFromJson(file_path_initial_placement);
         string character_data_string = JsonConvert.SerializeObject(initial_placement, Formatting.None);
-
         string world_Grid_String = GridToString(world_grid_global);
         string character_Grid_String = GridToString(character_Grid);
 
+        /*
+        */
+
+        string prompt =
+            "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
+            "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
+            "to represent EnvironmentTiles. The EnvironmentTiles and their associated ObjectIDs are located " +
+            "in the environment_data.json file provided below. Your task is to place one character for each character " +
+            "type that is specified in the character_data.json file provided below, onto the current_world_grid provided below by simply " +
+            "replacing the EnvironmentTile's ObjectID with the associated character's ObjectID. Each " +
+            "EnvironmentTile in the environment_data.json file provided below has a variable called 'walkable' which indicates " +
+            "whether or a not a character's ObjectID can replace a EnvironmentTile's objectID. Make sure the " +
+            "EnvironmentTile's 'walkable' variable is set to true before you replace the EnvironmentTile's " +
+            "ObjectID with the character's ObjectID. If the EnvironmentalTile's 'walkable' variable is false, " +
+            "then that means the character's ObjectID cannot replace the EnvironmentTile's ObjectID. In addition " +
+            "to that, I would like you to also specify a role for that character in this format: " +
+            "'CharacterID,Task' (e.g., '101,farming'). Make sure the role you specify for each character " +
+            "is a role that is explicitly stated in the 'DayTasks' section of the character_data.json provided below or the " +
+            "'NightTasks' section of the character_data.json provided below for the associated character you are placing. " +
+            "The current time is " + time_of_day + ". If the time is between 0600 and 1759, make sure and use a " +
+            "task that is from the 'DayTasks' section and if there are multiple tasks specified in the 'DayTasks' " +
+            "section of the character_data.json provided below file, pick one that is most relevant to the given situation and " +
+            "position of the character in the current world. If the time is between 1800 and 0559, " +
+            "make sure and use a task that is from the 'NightTasks' section of the character_data.json file provided below" +
+            "and if there are multiple tasks specified in the 'NightTasks' section of the character_data.json file provided below," +
+            "pick one that is most relevant to the given situation and position of the character in the current " +
+            "world. Separate each ID with a pipe '|' symbol and terminate each row with a newline character Here is a example " +
+            "row for your reference: 001|001|001|101,farming|001|001|001|001|001|001|\n. " +
+
+            "Here is the environment_data.json file:\n" +
+            environment_data_string + "\n\n" +
+
+            "Here is the character_data.json file:\n" +
+            character_data_string + "\n\n" +
+
+            "Here is the current_world_grid:\n" + 
+            world_Grid_String + "\n\n" +
+
+            "Respond with on the 10x10 grid in the format specified.";
+
+        /*
         string prompt =
             "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique " +
             "positions in the 10x10 grid where the current tile ID in the 'Current World Grid' corresponds to " +
@@ -302,6 +344,7 @@ public class OpenAIController : MonoBehaviour {
             "Current World Grid: " + world_Grid_String + "\n\n" +
             "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
             "Respond only with the 10x10 grid.";
+        */
 
         // TODO: Add more debug code here
 
