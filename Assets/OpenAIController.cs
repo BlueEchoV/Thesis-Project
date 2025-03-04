@@ -203,6 +203,23 @@ public class OpenAIController : MonoBehaviour {
             environment_data_string = JsonConvert.SerializeObject(environment_data, Formatting.None);
 
             // For this prompt response, we only want it to generate the terrain (ignoring the character ids
+
+            string prompt = "Instructions: Construct a 10x10 grid of EnvironmentTiles, which are provided in the " +
+                "environment_data.json below, that is created based off the description provided" +
+                "in the 'BackgroundStory' section of the envirnoment_data.json. Construct the " +
+                "grid using the EnvironmentTiles that are specified in the json file. Each of the EnvironmentTiles " +
+                "has an associated ObjectID variable. Use this ObjectID to create the grid. Each ObjectID corresponds " +
+                "to a specific tile type. Make sure the 10x10 grid is represented in a text format suitable for " +
+                "parsing. Only provide the grid in your response, with no additional text or artifacts. Format " +
+                "the grid as a table with 10 rows and 10 columns, where each cell contains the three-digit ObjectID " +
+                "of the corresponding tile. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\n" +
+                "Here is the environment_data.json file:\n" +
+
+                environment_data_string +
+
+                "Respond with on the 10x10 grid in the format specified.";
+
+            /*
             string prompt = 
                 "Instructions: Construct the grid based on the description provided in the 'BackgroundStory' section " +
                 "of the environment_data.json file. Construct it using the tiles specified in the json file. Each " +
@@ -218,7 +235,8 @@ public class OpenAIController : MonoBehaviour {
                 "environment_data.json: " + environment_data_string +
                 "\n\n" +
 
-                "Remember. ONLY respond with only the 10x10 grid.";
+                "Respond only with the 10x10 grid.";
+            */
 
             Debug.Log("Prompt 1 - World Generation: \n" + prompt);
 
@@ -261,13 +279,12 @@ public class OpenAIController : MonoBehaviour {
             "positions in the 10x10 grid where the current tile ID in the 'Current World Grid' corresponds to " +
             "a walkable tile (i.e., 'Walkable': true in 'EnvironmentTiles'). Consider their roles and the environment " +
             "when choosing positions. Follow these rules:\n" +
-            " - **Placement**:\n" +
-            "   - Select positions (i,j) where the tile ID at grid[i][j] is walkable, as defined in " +
             "'EnvironmentTiles'.\n" +
             "   - Match the position to the character's 'Role':\n" +
-            "     - Place farmers directly on grass tiles (e.g., '001').\n" +
-            "     - Place fishers on walkable tiles adjacent to water tiles (e.g., '002').\n" +
+            "     - Place farmers directly on grass tiles.\n" +
+            "     - Place fishers on walkable tiles adjacent to water tiles.\n" +
             "   - Ensure no two characters occupy the same position.\n" +
+            "   - Ensure that characters are not on a tile that's walkable variable is marked as 'false'.\n" +
             " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time " +
             "is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
             "   - The current time is " + time_of_day + ".\n" +
@@ -277,13 +294,14 @@ public class OpenAIController : MonoBehaviour {
             "   - Cells without characters are the tile ID (e.g., '001').\n" +
             "   - Separate cells with '|' and end rows with '\\n'.\n" +
             "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n" +
-            "**Important**: Do not place characters on non-walkable tiles (e.g., '002', '004', '005'). For roles " +
+            "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'. For roles " +
             "requiring proximity to certain tiles (e.g., fishers near water), place them on adjacent walkable " +
             "tiles, not on the non-walkable tiles themselves.\n\n" +
             "Character Data: " + character_data_string + "\n\n" +
             "Environment Data: " + environment_data_string + "\n\n" +
             "Current World Grid: " + world_Grid_String + "\n\n" +
-            "Respond only with the grid.";
+            "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
+            "Respond only with the 10x10 grid.";
 
         // TODO: Add more debug code here
 
@@ -356,7 +374,8 @@ public class OpenAIController : MonoBehaviour {
                 "Original World Grid: " + world_Grid_String + "\n\n" +
                 "Current Character Grid: " + character_Grid_String + "\n\n" +
                 
-                "Respond only with the updated 10x10 grid.";
+                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'" +
+                "Respond only with the 10x10 grid.";
 
             Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
 
