@@ -1,4 +1,4 @@
-using OpenAI_API;
+﻿using OpenAI_API;
 using OpenAI_API.Chat;
 using OpenAI_API.Models;
 using System;
@@ -276,7 +276,36 @@ public class OpenAIController : MonoBehaviour {
 
         string formatted_time = time_of_day.ToString("D4");
 
-        string prompt =
+        string prompt = 
+            "Instructions: " +
+                "1. Place characters from `character_data.json` onto the `current_world_grid`.\n" +
+                "2. For each character:\n" +
+                "   - Find their ObjectID (e.g., 101 for Civilian Man, 102 for Civilian Woman)\n" +
+                "   - Check the `EnvironmentTiles` in `environment_data.json` to identify walkable tiles (`Walkable: true`).\n" +
+                "   - **Only replace walkable tiles** (ObjectIDs 001 or 003) with the character’s ObjectID.\n" +
+                "   - Assign a task from `DayTasks`/`NightTasks` based on the current time (2000 → use `NightTasks`).\n" +
+                "3. Example:\n" +
+                "   - Farmer (101) should be placed on grass (001) with a task like \"resting\".\n" +
+                "   - Fisher (102) should be placed near water (002) but **not on water** (since it’s unwalkable).\n" +
+                "Format:\n" +
+                "- Replace ONE walkable tile per character.\n" +
+                "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
+                "- Separate cells with `|` and rows with `\n`. " + 
+                "JSON Data:\n" +
+
+                "Here is the environment_data.json file:\n" +
+                environment_data_string + "\n\n" +
+
+                "Here is the character_data.json file:\n" +
+                character_data_string + "\n\n" +
+
+                "Here is the current_world_grid:\n" + 
+                world_Grid_String + "\n\n" +
+
+                "Respond only with the 10x10 grid in the format specified."; 
+
+        /*
+         string prompt =
             "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
             "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
             "to represent EnvironmentTiles. The EnvironmentTiles and their associated ObjectIDs are located " +
@@ -314,6 +343,7 @@ public class OpenAIController : MonoBehaviour {
             world_Grid_String + "\n\n" +
 
             "Respond only with the 10x10 grid in the format specified.";
+        */
 
         /*
         string prompt =
