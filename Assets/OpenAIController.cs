@@ -285,8 +285,8 @@ public class OpenAIController : MonoBehaviour {
                 "   - **Only replace walkable tiles** (ObjectIDs 001 or 003) with the character’s ObjectID.\n" +
                 "   - Assign a task from `DayTasks`/`NightTasks` based on the current time (2000 → use `NightTasks`).\n" +
                 "3. Example:\n" +
-                "   - Farmer (101) should be placed on grass (001) with a task like \"resting\".\n" +
-                "   - Fisher (102) should be placed near water (002) but **not on water** (since it’s unwalkable).\n" +
+                "   - \"Role\" : \"Farmer\" (101) should be placed on grass (001) with a task like \"resting\".\n" +
+                "   - \"Role\" : \"Fisher\" (102) should be placed near water (002) but **not on water** (since it’s unwalkable).\n" +
                 "Format:\n" +
                 "- Replace ONE walkable tile per character.\n" +
                 "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
@@ -421,6 +421,37 @@ public class OpenAIController : MonoBehaviour {
         while (true)
         {
                 
+
+            /*
+            Instructions:
+1. For each character in `current_character_grid`:
+   - Check their current position and task (e.g., 101 is "resting").
+   - Identify adjacent tiles (N/S/E/W) using `current_world_grid`.
+   - Validate movement using `EnvironmentTiles` in `environment_data.json`:
+     - Target tile must be walkable (`Walkable: true`).
+     - Do NOT move into water (002), house (004), or flowers (005).
+2. Update tasks based on time (0000 → use `NightTasks`).
+   - Farmer (101): If near house (004), keep "resting".
+   - Fisher (102): If near water (002), keep "resting".
+3. If no valid moves, leave the character in place.
+
+JSON Data:
+- Same `EnvironmentTiles` and `Characters` as above.
+
+Current Character Grid:
+001|001|001|001|001|001|001|001|001|001|
+001|001|001|005|005|005|001|001|001|001|
+001|001|005|002|002|002|005|001|001|001|
+001|001|101,resting|002|002|002|102,resting|001|001|001|
+001|001|001|002|002|002|001|001|001|001|
+001|001|001|005|002|002|005|001|001|001|
+001|001|001|005|005|005|001|001|001|001|
+001|001|001|001|001|001|001|001|001|001|
+001|001|001|001|001|001|001|001|001|001|
+001|001|001|001|004|001|001|001|001|001|
+
+Respond ONLY with the updated grid.
+            */
             string prompt =
                 "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
                 "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
