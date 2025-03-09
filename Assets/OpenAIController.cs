@@ -276,6 +276,7 @@ public class OpenAIController : MonoBehaviour {
 
         string formatted_time = time_of_day.ToString("D4");
 
+        /*
         string prompt = 
             "Instructions: " +
                 "1. Place characters from `character_data.json` onto the `current_world_grid`.\n" +
@@ -303,8 +304,9 @@ public class OpenAIController : MonoBehaviour {
                 world_Grid_String + "\n\n" +
 
                 "Respond only with the 10x10 grid in the format specified."; 
+        */
 
-        /*
+        // TODO: RESTRUCTURE THIS TO BE IN A MORE CONDENSED FORMAT.
          string prompt =
             "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
             "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
@@ -343,7 +345,6 @@ public class OpenAIController : MonoBehaviour {
             world_Grid_String + "\n\n" +
 
             "Respond only with the 10x10 grid in the format specified.";
-        */
 
         /*
         string prompt =
@@ -421,10 +422,11 @@ public class OpenAIController : MonoBehaviour {
         while (true)
         {
 
+            /*
             string prompt = 
                "Instructions:\n" +
-               "1. For each character in `current_character_grid`:\n" +
-               "   - Check their current position and task (e.g., 101 is \"resting\").\n" +
+               "1. For each character in the 10x10 `current_character_grid` provided below:\n" +
+               "   - Check their current position and task (e.g., 101 is the objectID and \"resting\" is the task).\n" +
                "   - Identify adjacent tiles (N/S/E/W) using `current_world_grid` and move the characters at most one tile in any direction (N/S/E/W)." +
                "     that is relevant to their given task and position.\n" +
                "   - Validate movement using `EnvironmentTiles` in `environment_data.json`:\n" +
@@ -435,9 +437,10 @@ public class OpenAIController : MonoBehaviour {
                "   - Fisher (102): If near water (002), keep \"resting\".\n" +
                "3. If no valid moves, leave the character in place.\n" +
                "Format:\n" +
-                "- Replace ONE walkable tile per character.\n" +
-                "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
-                "- Separate cells with `|` and rows with `\\n`. " +  
+               "- Replace ONE walkable tile per character.\n" +
+               "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
+               "- Separate cells with `|` and rows with `\\n`. " +  
+               "- Make sure the grid is at most a length of 10x10." +
 
                "JSON Data:\n" +
 
@@ -454,8 +457,8 @@ public class OpenAIController : MonoBehaviour {
                 world_Grid_String + "\n\n" +
 
                "Respond ONLY with the updated 10x10 grid with the characters moving one tile in any direction..\n";
+            */
 
-            /*
             string prompt =
                 "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
                 "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
@@ -504,8 +507,6 @@ public class OpenAIController : MonoBehaviour {
                 world_Grid_String + "\n\n" +
 
                 "Respond only with the 10x10 grid in the format specified.";
-            */
-
 
                 /*
                 string prompt =
