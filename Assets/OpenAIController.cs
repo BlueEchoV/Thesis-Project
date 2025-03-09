@@ -290,7 +290,7 @@ public class OpenAIController : MonoBehaviour {
                 "Format:\n" +
                 "- Replace ONE walkable tile per character.\n" +
                 "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
-                "- Separate cells with `|` and rows with `\n`. " + 
+                "- Separate cells with `|` and rows with `\\n`. " + 
                 "JSON Data:\n" +
 
                 "Here is the environment_data.json file:\n" +
@@ -420,37 +420,40 @@ public class OpenAIController : MonoBehaviour {
         // GAMELOOP
         while (true)
         {
-                
 
             string prompt = 
                "Instructions:\n" +
-                   "1. For each character in `current_character_grid`:\n" +
-                   "   - Check their current position and task (e.g., 101 is \"resting\").\n" +
-                   "   - Identify adjacent tiles (N/S/E/W) using `current_world_grid` and move the characters in tile in any direction" +
-                   "that is relivant to their given task and position.\n" +
-                   "   - Validate movement using `EnvironmentTiles` in `environment_data.json`:\n" +
-                   "     - Target tile must be walkable (`Walkable: true`).\n" +
-                   "     - Do NOT move into water (002), house (004), or flowers (005).\n" +
-                   "2. Update tasks based on time (0000 → use `NightTasks`).\n" +
-                   "   - Farmer (101): If near house (004), keep \"resting\".\n" +
-                   "   - Fisher (102): If near water (002), keep \"resting\".\n" +
-                   "3. If no valid moves, leave the character in place.\n" +
+               "1. For each character in `current_character_grid`:\n" +
+               "   - Check their current position and task (e.g., 101 is \"resting\").\n" +
+               "   - Identify adjacent tiles (N/S/E/W) using `current_world_grid` and move the characters at most one tile in any direction (N/S/E/W)." +
+               "     that is relevant to their given task and position.\n" +
+               "   - Validate movement using `EnvironmentTiles` in `environment_data.json`:\n" +
+               "     - Target tile must be walkable (`walkable: true`).\n" +
+               "     - Do NOT move into any of the following tiles: " + GetNonWalkableTiles(environment_data_string) + ".\n" +
+               "2. Update tasks based on time (0000 → use `NightTasks`).\n" +
+               "   - Farmer (101): If near house (004), keep \"resting\".\n" +
+               "   - Fisher (102): If near water (002), keep \"resting\".\n" +
+               "3. If no valid moves, leave the character in place.\n" +
+               "Format:\n" +
+                "- Replace ONE walkable tile per character.\n" +
+                "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
+                "- Separate cells with `|` and rows with `\\n`. " +  
 
-                   "JSON Data:\n" +
+               "JSON Data:\n" +
 
-                   "Here is the environment_data.json file:\n" +
-                    environment_data_string + "\n\n" +
+               "Here is the environment_data.json file:\n" +
+                environment_data_string + "\n\n" +
 
-                   "Here is the character_data.json file:\n" +
-                    character_data_string + "\n\n" +
+               "Here is the character_data.json file:\n" +
+                character_data_string + "\n\n" +
 
-                   "Here is the current_character_grid:\n" +
-                    character_Grid_String + "\n\n" +
+               "Here is the current_character_grid:\n" +
+                character_Grid_String + "\n\n" +
 
-                   "Here is the current_world_grid:\n" + 
-                    world_Grid_String + "\n\n" +
-         
-                   "Respond ONLY with the updated grid.\n";
+               "Here is the current_world_grid:\n" + 
+                world_Grid_String + "\n\n" +
+
+               "Respond ONLY with the updated 10x10 grid with the characters moving one tile in any direction..\n";
 
             /*
             string prompt =
@@ -573,6 +576,24 @@ public class OpenAIController : MonoBehaviour {
                 yield return new WaitForSeconds(5f);
         }
     }
+    private string GetNonWalkableTiles(string environmentData)
+{
+    var nonWalkableTiles = new List<string>();
+
+    // Deserialize JSON
+    var gameData = JsonConvert.DeserializeObject<EnvironmentData>(environmentData);
+    
+    foreach (var tile in gameData.EnvironmentTiles)
+    {
+        // Assuming EnvironmentTile has a Walkable property
+        if (!tile.Walkable)
+        {
+            nonWalkableTiles.Add(tile.ObjectID);
+        }
+    }
+
+    return string.Join(", ", nonWalkableTiles);
+}
 
     void InstantiateWorldGrid(string chat_gpt_response)
     {
