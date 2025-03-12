@@ -204,6 +204,25 @@ public class OpenAIController : MonoBehaviour {
 
             // For this prompt response, we only want it to generate the terrain (ignoring the character ids
 
+            string prompt =
+                "Instructions:\n" +
+                "   - Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
+                "   environment_data.json file below.\n" +
+                "   - The grid of ObjectIDs that correspond to the EnvironmentTiles should should be based off\n" +
+                "   of the 'BackgroundStroy' section of the environment_data.json file provided below.\n" + 
+                "Grid Format:\n" +
+                "   - The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
+                "   - of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a\n" +
+                "   - newline character '\\n'.\n" +
+                "   - Here is an example row: 001|001|001|001|001|001|001|001|001|001|\\n\n" +
+                "   - It is very important that your response only includes the grid and no additional artifacts.\n\n" +
+                "envorinment_data.json:\n" +
+
+                environment_data_string + "\n" +
+
+                "Respond only with the 10x10 grid in the format specified." ;
+
+            /*
             string prompt = "Instructions: Construct a 10x10 grid of EnvironmentTiles, which are provided in the " +
                 "environment_data.json below, that is created based off the description provided" +
                 "in the 'BackgroundStory' section of the envirnoment_data.json. Construct the " +
@@ -220,6 +239,7 @@ public class OpenAIController : MonoBehaviour {
                 environment_data_string +
 
                 "Respond only with the 10x10 grid in the format specified.";
+            */
 
             /*
             string prompt = 
