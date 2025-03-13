@@ -296,6 +296,45 @@ public class OpenAIController : MonoBehaviour {
 
         string formatted_time = time_of_day.ToString("D4");
 
+    
+        string prompt =
+            "Instructions:\n" +
+            "   - Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
+            "character_data.json provided below.\n" +
+            "   - Below I have provided the current_world_map as it exists. This map contains the ObjectIDs of different\n" +
+            "EnvironmentTiles that correspond to a specific tile type that is specified in the environment_data.json " +
+            "file provided below. This map represents the world the characters stand on top of.\n" +
+            "   - Your task is to replace the ObjectID of one of the tiles in the current_world_map with a character\n" +
+            "ObjectID. Please take note of the 'walkable' variable inside of the environoment_data.json file provided\n" +
+            "below. This value specifies if that tile can be walked on (or replaced by) a character. It is very\n" +
+            "important that the EnvironmentTile ObjectID you replace with the character you are placing has a\n" +
+            "'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
+            "and walked on. This will represent the position of the character in the world. Also, Make sure you\n" +
+            "place the character in a relevant position in the world. Look at the characters role and see if you\n" +
+            "can have their position reflect their role. (Example: If the character is a fisher, put them near water).\n" +
+            "   - Lastly, please provide a task the current character by providing the task type using this format\n" +
+            "'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
+            "DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is " +
+            time_of_day + ". If the time, which is in military time, is between 0600 and 1800, use one of the " +
+            "character's DayTime tasks. If it is between 1800 and 0600, use a NightTask." +
+            "Grid Format:\n" +
+            "   - The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
+            "   - of the corresponding tile in the current_world_grid, or the newly placed characters ObjectID.\n" +
+            "   - Separate each ID with a pipe '|' symbol and terminate each row with a newline character '\\n'.\n" +
+            "   - Here is an example row: 001|001|001|001|001|101,fishing|001|001|001|001|\\n\n" +
+            "   - It is very important that your response only includes the grid and no additional artifacts.\n\n" +
+
+            "environment_data.json:\n" +
+            environment_data_string + "\n\n" +
+
+            "character_data.json:\n" +
+            character_data_string + "\n\n" +
+
+            "current_world_grid:\n" + 
+            world_Grid_String + "\n\n" +
+
+            "Respond only with the 10x10 grid in the format specified." ;
+
         /*
         string prompt = 
             "Instructions: " +
@@ -326,6 +365,7 @@ public class OpenAIController : MonoBehaviour {
                 "Respond only with the 10x10 grid in the format specified."; 
         */
 
+        /*
         // TODO: RESTRUCTURE THIS TO BE IN A MORE CONDENSED FORMAT.
          string prompt =
             "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
@@ -365,6 +405,7 @@ public class OpenAIController : MonoBehaviour {
             world_Grid_String + "\n\n" +
 
             "Respond only with the 10x10 grid in the format specified.";
+        */
 
         /*
         string prompt =
@@ -443,6 +484,49 @@ public class OpenAIController : MonoBehaviour {
         {
 
             /*
+            string prompt =
+            "Instructions:\n" +
+            "   - Construct a 10x10 grid that updates the position of a character in the current_character_grid\n" +
+            "provided below.\n" +
+            "   - Below I have provided the current_world_map as it exists. This map contains the ObjectIDs of different\n" +
+            "EnvironmentTiles that correspond to a specific tile type that is specified in the environment_data.json " +
+            "file provided below. This map represents the world the characters stand on top of.\n" +
+            "   - Move the characters that are specified in the current_world" +
+            "   - Your task is to replace the ObjectID of one of the tiles in the current_world_map with a character\n" +
+            "ObjectID. Please take note of the 'walkable' variable inside of the environoment_data.json file provided\n" +
+            "below. This value specifies if that tile can be walked on (or replaced by) a character. It is very\n" +
+            "important that the EnvironmentTile ObjectID you replace with the character you are placing has a\n" +
+            "'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
+            "and walked on. This will represent the position of the character in the world. Also, Make sure you\n" +
+            "place the character in a relevant position in the world. Look at the characters role and see if you\n" +
+            "can have their position reflect their role. (Example: If the character is a fisher, put them near water).\n" +
+            "   - Lastly, please provide a task the current character by providing the task type using this format\n" +
+            "'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
+            "DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is " +
+            time_of_day + ". If the time, which is in military time, is between 0600 and 1800, use one of the " +
+            "character's DayTime tasks. If it is between 1800 and 0600, use a NightTask." +
+            "Grid Format:\n" +
+            "   - The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
+            "   - of the corresponding tile in the current_world_grid, or the newly placed characters ObjectID.\n" +
+            "   - Separate each ID with a pipe '|' symbol and terminate each row with a newline character '\\n'.\n" +
+            "   - Here is an example row: 001|001|001|001|001|101,fishing|001|001|001|001|\\n\n" +
+            "   - It is very important that your response only includes the grid and no additional artifacts.\n\n" +
+
+            "environment_data.json:\n" +
+            environment_data_string + "\n\n" +
+
+            "character_data.json:\n" +
+            character_data_string + "\n\n" +
+
+            "current_world_grid:\n" + 
+            world_Grid_String + "\n\n" +
+
+            "current_character_grid:\n" +
+            character_Grid_String + "\n\n" +
+
+            "Respond only with the 10x10 grid in the format specified." ;
+            */
+
             string prompt = 
                "Instructions:\n" +
                "1. For each character in the 10x10 `current_character_grid` provided below:\n" +
@@ -477,8 +561,8 @@ public class OpenAIController : MonoBehaviour {
                 world_Grid_String + "\n\n" +
 
                "Respond ONLY with the updated 10x10 grid with the characters moving one tile in any direction..\n";
-            */
 
+            /*
             string prompt =
                 "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
                 "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
@@ -527,6 +611,7 @@ public class OpenAIController : MonoBehaviour {
                 world_Grid_String + "\n\n" +
 
                 "Respond only with the 10x10 grid in the format specified.";
+                   */
 
                 /*
                 string prompt =
