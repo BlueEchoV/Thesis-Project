@@ -483,7 +483,6 @@ public class OpenAIController : MonoBehaviour {
         while (true)
         {
 
-            /*
             string prompt =
             "Instructions:\n" +
             "   - Construct a 10x10 grid that updates the position of a character in the current_character_grid\n" +
@@ -491,6 +490,13 @@ public class OpenAIController : MonoBehaviour {
             "   - Below I have provided the current_world_map as it exists. This map contains the ObjectIDs of different\n" +
             "EnvironmentTiles that correspond to a specific tile type that is specified in the environment_data.json " +
             "file provided below. This map represents the world the characters stand on top of.\n" +
+            "   - Below, I have also provided the current_character_grid which shows where the characters are\n" +
+            "currently positioned in the world." +
+            "   - The current time is " + time_of_day + ". If the current time, which is in military time, is between\n" +
+            "0600 and 1800, then move the characters ObjectID one tile in any direction. Either up one tile, down one tile,\n" +
+            "left one tile, or right one tile if possible.\n" +
+            "   - Once you move the character, replace the EnvironmentTile's OjbectID the move from with the\n" +
+            "EnvironmentTile's ObjectID that is specified in the current_world_grid.\n" +
             "   - Move the characters that are specified in the current_world" +
             "   - Your task is to replace the ObjectID of one of the tiles in the current_world_map with a character\n" +
             "ObjectID. Please take note of the 'walkable' variable inside of the environoment_data.json file provided\n" +
@@ -525,8 +531,8 @@ public class OpenAIController : MonoBehaviour {
             character_Grid_String + "\n\n" +
 
             "Respond only with the 10x10 grid in the format specified." ;
-            */
 
+            /*
             string prompt = 
                "Instructions:\n" +
                "1. For each character in the 10x10 `current_character_grid` provided below:\n" +
@@ -561,6 +567,7 @@ public class OpenAIController : MonoBehaviour {
                 world_Grid_String + "\n\n" +
 
                "Respond ONLY with the updated 10x10 grid with the characters moving one tile in any direction..\n";
+            */
 
             /*
             string prompt =
