@@ -296,23 +296,26 @@ public class OpenAIController : MonoBehaviour {
 
         string formatted_time = time_of_day.ToString("D4");
 
+        // TODO: Add numbers to the prompts for more clarification?
     
         string prompt =
             "Instructions:\n" +
-            "   - Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
+            "   1. Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
             "character_data.json provided below.\n" +
-            "   - Below I have provided the current_world_map as it exists. This map contains the ObjectIDs of different\n" +
+            "   2. Below I have provided the current_world_map as it exists. This map contains the ObjectIDs of different\n" +
             "EnvironmentTiles that correspond to a specific tile type that is specified in the environment_data.json " +
             "file provided below. This map represents the world the characters stand on top of.\n" +
-            "   - Your task is to replace the ObjectID of one of the tiles in the current_world_map with a character\n" +
-            "ObjectID. Please take note of the 'walkable' variable inside of the environoment_data.json file provided\n" +
+            "   3. Your task is to replace some of the ObjectIDs of the tiles in the current_world_map with character\n" +
+            "ObjectIDs. Place once character for each character that is specified in the charater_data.json file.\n" +
+            "   4. Take note of the 'walkable' variable inside of the environoment_data.json file provided\n" +
             "below. This value specifies if that tile can be walked on (or replaced by) a character. It is very\n" +
             "important that the EnvironmentTile ObjectID you replace with the character you are placing has a\n" +
             "'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
-            "and walked on. This will represent the position of the character in the world. Also, Make sure you\n" +
-            "place the character in a relevant position in the world. Look at the characters role and see if you\n" +
-            "can have their position reflect their role. (Example: If the character is a fisher, put them near water).\n" +
-            "   - Lastly, please provide a task the current character by providing the task type using this format\n" +
+            "and walked on. This will represent the position of the character in the world. " +
+            "   5. Make sure you place the character in a relevant position in the world. Look at the characters role\n" +
+            "and see if you can have their position reflect their role. (Example: If the character is a fisher, put\n" +
+            " them near water).\n" +
+            "   6. Provide a task the current character by providing the task type using this format\n" +
             "'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
             "DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is " +
             time_of_day + ". If the time, which is in military time, is between 0600 and 1800, use one of the " +
