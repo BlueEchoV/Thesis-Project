@@ -497,16 +497,15 @@ public class OpenAIController : MonoBehaviour {
             "left one tile, or right one tile if possible.\n" +
             "   - Once you move the character, replace the EnvironmentTile's OjbectID the move from with the\n" +
             "EnvironmentTile's ObjectID that is specified in the current_world_grid.\n" +
-            "   - Move the characters that are specified in the current_world" +
-            "   - Your task is to replace the ObjectID of one of the tiles in the current_world_map with a character\n" +
+            "   - When you move the characters ObjectID, replace one of the tiles in the current_world_map with a character\n" +
             "ObjectID. Please take note of the 'walkable' variable inside of the environoment_data.json file provided\n" +
             "below. This value specifies if that tile can be walked on (or replaced by) a character. It is very\n" +
             "important that the EnvironmentTile ObjectID you replace with the character you are placing has a\n" +
             "'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
             "and walked on. This will represent the position of the character in the world. Also, Make sure you\n" +
-            "place the character in a relevant position in the world. Look at the characters role and see if you\n" +
-            "can have their position reflect their role. (Example: If the character is a fisher, put them near water).\n" +
-            "   - Lastly, please provide a task the current character by providing the task type using this format\n" +
+            "move the character in a relevant direction in the world. Look at the characters role and see if you\n" +
+            "can have their position reflect their role. (Example: If the character is a fisher, move them around water).\n" +
+            "   - Lastly, please provide an updated task the current character by providing the task type using this format\n" +
             "'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
             "DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is " +
             time_of_day + ". If the time, which is in military time, is between 0600 and 1800, use one of the " +
@@ -690,23 +689,23 @@ public class OpenAIController : MonoBehaviour {
         }
     }
     private string GetNonWalkableTiles(string environmentData)
-{
-    var nonWalkableTiles = new List<string>();
-
-    // Deserialize JSON
-    var gameData = JsonConvert.DeserializeObject<EnvironmentData>(environmentData);
-    
-    foreach (var tile in gameData.EnvironmentTiles)
     {
-        // Assuming EnvironmentTile has a Walkable property
-        if (!tile.Walkable)
-        {
-            nonWalkableTiles.Add(tile.ObjectID);
-        }
-    }
+        var nonWalkableTiles = new List<string>();
 
-    return string.Join(", ", nonWalkableTiles);
-}
+        // Deserialize JSON
+        var gameData = JsonConvert.DeserializeObject<EnvironmentData>(environmentData);
+        
+        foreach (var tile in gameData.EnvironmentTiles)
+        {
+            // Assuming EnvironmentTile has a Walkable property
+            if (!tile.Walkable)
+            {
+                nonWalkableTiles.Add(tile.ObjectID);
+            }
+        }
+
+        return string.Join(", ", nonWalkableTiles);
+    }
 
     void InstantiateWorldGrid(string chat_gpt_response)
     {
