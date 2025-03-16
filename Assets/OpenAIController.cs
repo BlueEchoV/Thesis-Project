@@ -297,6 +297,8 @@ public class OpenAIController : MonoBehaviour {
         string formatted_time = time_of_day.ToString("D4");
 
         // TODO: A new format of prompt that tries focusing more on ties everything to one core entity?
+        // TODO: Repeat core rules multiple times? (Walkable above and before the file?
+        // TODO: Try putting the data before the prompt?
 
         /*
         string prompt =
@@ -304,7 +306,24 @@ public class OpenAIController : MonoBehaviour {
             "Construct a 10x10 grid of ObjectIDs. The format of the grid is provided here:\n\n" +
 
             "Grid Format:\n" +
-            "1. Each value in the grid is a ObjectID that corresponds to either the "
+            "1. Each value in the grid is a ObjectID that corresponds to either an EnvironmentTile or a Character\n" +
+            "   that is specified in the environment_data.json file provided below and the characters_data.json provided\n" +
+            "   below.\n" +
+            "2. \n" +
+
+            "This is the environment_data.json file. It contains information about the tiles of the world. Each tile type\n" +
+            "has a corresponding ObjectID which represents the tile in the grid.\n" +
+            environment_data_string + "\n\n" +
+
+            "This is the character_data.json file. It contains information about the characters in the world. Each character\n" +
+            "type has a corresponding ObjectID which represents the character in the world and where they are in the grid.\n" +
+            "character_data.json:\n" +
+            character_data_string + "\n\n" +
+
+            "current_world_grid:\n" + 
+            world_Grid_String + "\n\n" +
+
+            "Please respond with only the 10x10 grid of ObjectIDs and no other artifacts."
             ;
         */
 
