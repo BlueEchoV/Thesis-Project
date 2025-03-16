@@ -296,6 +296,18 @@ public class OpenAIController : MonoBehaviour {
 
         string formatted_time = time_of_day.ToString("D4");
 
+        // TODO: A new format of prompt that tries focusing more on ties everything to one core entity?
+
+        /*
+        string prompt =
+            "Instructions:\n" +
+            "Construct a 10x10 grid of ObjectIDs. The format of the grid is provided here:\n\n" +
+
+            "Grid Format:\n" +
+            "1. Each value in the grid is a ObjectID that corresponds to either the "
+            ;
+        */
+
         string prompt =
             "Instructions:\n" +
             "   1. Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
