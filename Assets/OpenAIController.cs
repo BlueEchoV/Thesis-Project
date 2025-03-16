@@ -206,17 +206,17 @@ public class OpenAIController : MonoBehaviour {
 
             string prompt =
                 "Instructions:\n" +
-                "   - Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
+                "   1. Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
                 "   environment_data.json file below.\n" +
-                "   - The grid of ObjectIDs that correspond to the EnvironmentTiles should should be based off\n" +
+                "   2. The grid of ObjectIDs that correspond to the EnvironmentTiles should should be based off\n" +
                 "   of the 'BackgroundStroy' section of the environment_data.json file provided below.\n" + 
                 "Grid Format:\n" +
-                "   - The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
-                "   - of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a\n" +
-                "   - newline character '\\n'.\n" +
-                "   - Here is an example row: 001|001|001|001|001|001|001|001|001|001|\\n\n" +
-                "   - It is very important that your response only includes the grid and no additional artifacts.\n\n" +
-                "envorinment_data.json:\n" +
+                "   1. The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
+                "   of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a\n" +
+                "   2. newline character '\\n'.\n" +
+                "   3. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\\n\n" +
+                "   4. It is very important that your response only includes the grid and no additional artifacts.\n\n" +
+                "environment_data.json:\n" +
 
                 environment_data_string + "\n" +
 
@@ -296,8 +296,6 @@ public class OpenAIController : MonoBehaviour {
 
         string formatted_time = time_of_day.ToString("D4");
 
-        // TODO: Add numbers to the prompts for more clarification?
-    
         string prompt =
             "Instructions:\n" +
             "   1. Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
