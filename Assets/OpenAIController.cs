@@ -14,6 +14,14 @@ using System.Text;
 
 using System.Net.Http;
 using Unity.VisualScripting;
+
+// TODO: Finish the current iteration of the prompt I am working on
+// TODO: Add names to the different prompt types
+// TODO: Try and settle on 4, but 3 is fine
+// TODO: Hook up the new method for switching between them easier
+// TODO: Remove the walkable tile from the JSON and document that solution
+// TODO: Remove the 'role' variable from the character_data.json and see if less helps the model
+
 public enum Prompt_Selected
 {
     PS_Prompt_1 = 1,
@@ -219,19 +227,6 @@ public class OpenAIController : MonoBehaviour {
             string prompt = "";
             if (current_prompt == Prompt_Selected.PS_Prompt_1)
             {
-
-            } else if (current_prompt == Prompt_Selected.PS_Prompt_2) { 
-
-            } else if (current_prompt == Prompt_Selected.PS_Prompt_3) {
-
-            } else if (current_prompt == Prompt_Selected.PS_Prompt_4) {
-                
-            } else
-            {
-                Debug.Log("ERROR: Prompt not initialized.");
-            }
-
-                /*
                 prompt =
                     "Instructions: Construct the grid based on the description provided in the 'BackgroundStory' section " +
                     "of the environment_data.json file. Construct it using the tiles specified in the json file. Each " +
@@ -248,7 +243,7 @@ public class OpenAIController : MonoBehaviour {
                     "\n\n" +
 
                     "Respond only with the 10x10 grid.";
-                }
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_2) { 
                 prompt = "Instructions: Construct a 10x10 grid of EnvironmentTiles, which are provided in the " +
                     "environment_data.json below, that is created based off the description provided" +
                     "in the 'BackgroundStory' section of the envirnoment_data.json. Construct the " +
@@ -265,8 +260,7 @@ public class OpenAIController : MonoBehaviour {
                     environment_data_string +
 
                     "Respond only with the 10x10 grid in the format specified.";
-                */
-
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_3) {
                 prompt =
                     "Instructions:\n" +
                     "   1. Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
@@ -284,6 +278,13 @@ public class OpenAIController : MonoBehaviour {
                     environment_data_string + "\n" +
 
                     "Respond only with the 10x10 grid in the format specified.";
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_4) {
+                
+            } else
+            {
+                Debug.Log("ERROR: Prompt not initialized.");
+            }
+
 
             if (prompt == "")
             {
