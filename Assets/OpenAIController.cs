@@ -217,68 +217,73 @@ public class OpenAIController : MonoBehaviour {
             // For this prompt response, we only want it to generate the terrain (ignoring the character ids
 
             string prompt = "";
-            /*
-            switch (current_prompt)
+            if (current_prompt == Prompt_Selected.PS_Prompt_1)
             {
-                case(1):
-                {
+
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_2) { 
+
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_3) {
+
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_4) {
+                
+            } else
+            {
+                Debug.Log("ERROR: Prompt not initialized.");
+            }
+
+                /*
+                prompt =
+                    "Instructions: Construct the grid based on the description provided in the 'BackgroundStory' section " +
+                    "of the environment_data.json file. Construct it using the tiles specified in the json file. Each " +
+                    "EnvironmentTile has an associated ObjectID. Use this ObjectID in the construction of the grid. Make " +
+                    "sure the 10x10 grid is represented in a text format suitable for parsing. Only provide the " +
+                    "grid in your response. Format the grid as a table with 10 rows and 10 columns, " +
+                    "where each cell contains a three-digit ObjectID of the tile which are provided in the " +
+                    "'EnvironmentTiles' section. Separate each ID with a pipe '|' symbol and terminate each row " +
+                    "with a newline character '\\n'" +
+                    "Here is an example row: 001|001|001|001|001|001|001|001|001|001|" +
+
+                    "\n\n" +
+                    "environment_data.json: " + environment_data_string +
+                    "\n\n" +
+
+                    "Respond only with the 10x10 grid.";
                 }
-            }
-            */
+                prompt = "Instructions: Construct a 10x10 grid of EnvironmentTiles, which are provided in the " +
+                    "environment_data.json below, that is created based off the description provided" +
+                    "in the 'BackgroundStory' section of the envirnoment_data.json. Construct the " +
+                    "grid using the EnvironmentTiles that are specified in the json file. Each of the EnvironmentTiles " +
+                    "has an associated ObjectID variable. Use this ObjectID to create the grid. Each ObjectID corresponds " +
+                    "to a specific tile type. Make sure the 10x10 grid is represented in a text format suitable for " +
+                    "parsing. Only provide the grid in your response, with no additional text or artifacts. Format " +
+                    "the grid as a table with 10 rows and 10 columns, where each cell contains the three-digit ObjectID " +
+                    "of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a " +
+                    "newline character '\\n'. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\n" +
 
-            /*
-            prompt =
-                "Instructions: Construct the grid based on the description provided in the 'BackgroundStory' section " +
-                "of the environment_data.json file. Construct it using the tiles specified in the json file. Each " +
-                "EnvironmentTile has an associated ObjectID. Use this ObjectID in the construction of the grid. Make " +
-                "sure the 10x10 grid is represented in a text format suitable for parsing. Only provide the " +
-                "grid in your response. Format the grid as a table with 10 rows and 10 columns, " +
-                "where each cell contains a three-digit ObjectID of the tile which are provided in the " +
-                "'EnvironmentTiles' section. Separate each ID with a pipe '|' symbol and terminate each row " +
-                "with a newline character '\\n'" +
-                "Here is an example row: 001|001|001|001|001|001|001|001|001|001|" +
+                    "Here is the environment_data.json file:\n" +
 
-                "\n\n" +
-                "environment_data.json: " + environment_data_string +
-                "\n\n" +
+                    environment_data_string +
 
-                "Respond only with the 10x10 grid.";
-            }
-            prompt = "Instructions: Construct a 10x10 grid of EnvironmentTiles, which are provided in the " +
-                "environment_data.json below, that is created based off the description provided" +
-                "in the 'BackgroundStory' section of the envirnoment_data.json. Construct the " +
-                "grid using the EnvironmentTiles that are specified in the json file. Each of the EnvironmentTiles " +
-                "has an associated ObjectID variable. Use this ObjectID to create the grid. Each ObjectID corresponds " +
-                "to a specific tile type. Make sure the 10x10 grid is represented in a text format suitable for " +
-                "parsing. Only provide the grid in your response, with no additional text or artifacts. Format " +
-                "the grid as a table with 10 rows and 10 columns, where each cell contains the three-digit ObjectID " +
-                "of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a " +
-                "newline character '\\n'. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\n" +
+                    "Respond only with the 10x10 grid in the format specified.";
+                */
 
-                "Here is the environment_data.json file:\n" +
+                prompt =
+                    "Instructions:\n" +
+                    "   1. Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
+                    "   environment_data.json file below.\n" +
+                    "   2. The grid of ObjectIDs that correspond to the EnvironmentTiles should should be based off\n" +
+                    "   of the 'BackgroundStroy' section of the environment_data.json file provided below.\n" +
+                    "Grid Format:\n" +
+                    "   1. The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
+                    "   of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a\n" +
+                    "   2. newline character '\\n'.\n" +
+                    "   3. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\\n\n" +
+                    "   4. It is very important that your response only includes the grid and no additional artifacts.\n\n" +
+                    "environment_data.json:\n" +
 
-                environment_data_string +
+                    environment_data_string + "\n" +
 
-                "Respond only with the 10x10 grid in the format specified.";
-            */
-
-            prompt =
-                "Instructions:\n" +
-                "   1. Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
-                "   environment_data.json file below.\n" +
-                "   2. The grid of ObjectIDs that correspond to the EnvironmentTiles should should be based off\n" +
-                "   of the 'BackgroundStroy' section of the environment_data.json file provided below.\n" +
-                "Grid Format:\n" +
-                "   1. The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
-                "   of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a\n" +
-                "   2. newline character '\\n'.\n" +
-                "   3. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\\n\n" +
-                "   4. It is very important that your response only includes the grid and no additional artifacts.\n\n" +
-                "environment_data.json:\n" +
-
-                environment_data_string + "\n" +
-
-                "Respond only with the 10x10 grid in the format specified.";
+                    "Respond only with the 10x10 grid in the format specified.";
 
             if (prompt == "")
             {
@@ -325,6 +330,19 @@ public class OpenAIController : MonoBehaviour {
         // TODO: Repeat core rules multiple times? (Walkable above and before the file?
         // TODO: Try putting the data before the prompt?
 
+        if (current_prompt == Prompt_Selected.PS_Prompt_1)
+        {
+
+        } else if (current_prompt == Prompt_Selected.PS_Prompt_2) { 
+
+        } else if (current_prompt == Prompt_Selected.PS_Prompt_3) {
+
+        } else if (current_prompt == Prompt_Selected.PS_Prompt_4) {
+            
+        } else
+        {
+            Debug.Log("ERROR: Prompt not initialized.");
+        }
         /*
         string prompt =
             "Instructions:\n" +
@@ -541,6 +559,20 @@ public class OpenAIController : MonoBehaviour {
         while (true)
         {
 
+
+            if (current_prompt == Prompt_Selected.PS_Prompt_1)
+            {
+
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_2) { 
+
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_3) {
+
+            } else if (current_prompt == Prompt_Selected.PS_Prompt_4) {
+                
+            } else
+            {
+                Debug.Log("ERROR: Prompt not initialized.");
+            }
             string prompt =
             "Instructions:\n" +
             "   1. Construct a 10x10 grid that updates the position of a character in the current_character_grid\n" +
