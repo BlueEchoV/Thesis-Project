@@ -284,6 +284,7 @@ public class OpenAIController : MonoBehaviour {
             }
             else if (current_prompt == Prompt_Selected.PS_Prompt_Descriptive_List)
             {
+                // Duplicate from PS_Prompt_Brief_List because it is very effective so far
                 prompt =
                     "Instructions:\n" +
                     "   1. Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
@@ -353,19 +354,7 @@ public class OpenAIController : MonoBehaviour {
         // TODO: Repeat core rules multiple times? (Walkable above and before the file?
         // TODO: Try putting the data before the prompt?
 
-        if (current_prompt == Prompt_Selected.PS_Prompt_1)
-        {
-
-        } else if (current_prompt == Prompt_Selected.PS_Prompt_2) { 
-
-        } else if (current_prompt == Prompt_Selected.PS_Prompt_3) {
-
-        } else if (current_prompt == Prompt_Selected.PS_Prompt_4) {
-            
-        } else
-        {
-            Debug.Log("ERROR: Prompt not initialized.");
-        }
+        // Work in progress
         /*
         string prompt =
             "Instructions:\n" +
@@ -393,64 +382,37 @@ public class OpenAIController : MonoBehaviour {
             ;
         */
 
-        string prompt =
-            "Instructions:\n" +
-            "   1. Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
-            "   character_data.json provided below.\n" +
-            "   2. Below I have provided the current_world_map as it exists. This map contains the ObjectIDs of different\n" +
-            "   EnvironmentTiles that correspond to a specific tile type that is specified in the environment_data.json " +
-            "   file provided below. This map represents the world the characters stand on top of.\n" +
-            "   3. Your task is to replace some of the ObjectIDs of the tiles in the current_world_map with character\n" +
-            "   ObjectIDs. Place once character for each character that is specified in the charater_data.json file.\n" +
-            "   4. Take note of the 'walkable' variable inside of the environoment_data.json file provided below when\n" +
-            "   replacing a tile with a character tile.\n" +
-            "   This value specifies if that tile can be replaced by a character. It is VERY\n" +
-            "   IMPORTANT that the EnvironmentTile ObjectID you replace with the character you are placing has a\n" +
-            "   'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
-            "   and walked on. This will represent the position of the character in the world. " +
-            "   5. Make sure you place the character in a relevant position in the world. Look at the characters role\n" +
-            "   and see if you can have their position reflect their role. (Example: If the character is a fisher, put\n" +
-            "   them near water).\n" +
-            "   6. Provide a task the current character by providing the task type using this format\n" +
-            "   'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
-            "   DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is " +
-            "   " + time_of_day + ". If the time, which is in military time, is between 0600 and 1800, use one of the " +
-            "   character's DayTasks. If it is between 1800 and 0600, use a NightTask." +
-            "Grid Format:\n" +
-            "   1. The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
-            "   2. of the corresponding tile in the current_world_grid, or the newly placed characters ObjectID.\n" +
-            "   3. Separate each ID with a pipe '|' symbol and terminate each row with a newline character '\\n'.\n" +
-            "   4. Here is an example row: 001|001|001|001|001|101,fishing|001|001|001|001|\\n\n" +
-            "   5. It is very important that your response only includes the grid and no additional artifacts.\n\n" +
 
-            "environment_data.json:\n" +
-            environment_data_string + "\n\n" +
-
-            "character_data.json:\n" +
-            character_data_string + "\n\n" +
-
-            "current_world_grid:\n" + 
-            world_Grid_String + "\n\n" +
-
-            "Respond only with the 10x10 grid in the format specified." ;
-
-        /*
-        string prompt = 
-            "Instructions: " +
-                "1. Place characters from `character_data.json` onto the `current_world_grid`.\n" +
-                "2. For each character:\n" +
-                "   - Find their ObjectID (e.g., 101 for Civilian Man, 102 for Civilian Woman)\n" +
-                "   - Check the `EnvironmentTiles` in `environment_data.json` to identify walkable tiles (`Walkable: true`).\n" +
-                "   - **Only replace walkable tiles** (ObjectIDs 001 or 003) with the character’s ObjectID.\n" +
-                "   - Assign a task from `DayTasks`/`NightTasks` based on the current time (2000 → use `NightTasks`).\n" +
-                "3. Example:\n" +
-                "   - \"Role\" : \"Farmer\" (101) should be placed on grass (001) with a task like \"resting\".\n" +
-                "   - \"Role\" : \"Fisher\" (102) should be placed near water (002) but **not on water** (since it’s unwalkable).\n" +
-                "Format:\n" +
-                "- Replace ONE walkable tile per character.\n" +
-                "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
-                "- Separate cells with `|` and rows with `\\n`. " + 
-                "JSON Data:\n" +
+        string prompt = "";
+        if (current_prompt == Prompt_Selected.PS_Prompt_Paragraph)
+        {
+             prompt =
+                "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
+                "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
+                "to represent EnvironmentTiles. The EnvironmentTiles and their associated ObjectIDs are located " +
+                "in the environment_data.json file provided below. Your task is to place one character for each character " +
+                "type that is specified in the character_data.json file provided below, onto the current_world_grid provided below by simply " +
+                "replacing the EnvironmentTile's ObjectID with the associated character's ObjectID. Each " +
+                "EnvironmentTile in the environment_data.json file provided below has a variable called 'walkable' which indicates " +
+                "whether or a not a character's ObjectID can replace a EnvironmentTile's objectID. Make sure the " +
+                "EnvironmentTile's 'walkable' variable is set to true before you replace the EnvironmentTile's " +
+                "ObjectID with the character's ObjectID. If the EnvironmentalTile's 'walkable' variable is false, " +
+                "then that means the character's ObjectID cannot replace the EnvironmentTile's ObjectID. In addition " +
+                "to that, I would like you to also specify a role for that character in this format: " +
+                "'CharacterID,Task' (e.g., '101,farming'). Make sure the role you specify for each character " +
+                "is a role that is explicitly stated in the 'DayTasks' section of the character_data.json provided below or the " +
+                "'NightTasks' section of the character_data.json provided below for the associated character you are placing. " +
+                "The current time is " + formatted_time + ". If the time is between 0600 and 1759, make sure and use a " +
+                "task that is from the 'DayTasks' section and if there are multiple tasks specified in the 'DayTasks' " +
+                "section of the character_data.json provided below file, pick one that is most relevant to the given situation and " +
+                "position of the character in the current world. If the time is between 1800 and 0559, " +
+                "make sure and use a task that is from the 'NightTasks' section of the character_data.json file provided below" +
+                "and if there are multiple tasks specified in the 'NightTasks' section of the character_data.json file provided below," +
+                "pick one that is most relevant to the given situation and position of the character in the current " +
+                "world. Separate each ID with a pipe '|' symbol and terminate each row with a newline character. Make sure you only " +
+                "provide the 10x10 grid of ObjectIDs that are separated by the pipe '|' symbol and terminated each row with a " +
+                "newline character in your response. Here is a example row for your reference: " +
+                "001|001|001|101,farming|001|001|001|001|001|001|.\n " +
 
                 "Here is the environment_data.json file:\n" +
                 environment_data_string + "\n\n" +
@@ -461,81 +423,111 @@ public class OpenAIController : MonoBehaviour {
                 "Here is the current_world_grid:\n" + 
                 world_Grid_String + "\n\n" +
 
-                "Respond only with the 10x10 grid in the format specified."; 
-        */
+                "Respond only with the 10x10 grid in the format specified.";
+        } else if (current_prompt == Prompt_Selected.PS_Prompt_Brief_List) { 
+            prompt = 
+                "Instructions: " +
+                    "1. Place characters from `character_data.json` onto the `current_world_grid`.\n" +
+                    "2. For each character:\n" +
+                    "   - Find their ObjectID (e.g., 101 for Civilian Man, 102 for Civilian Woman)\n" +
+                    "   - Check the `EnvironmentTiles` in `environment_data.json` to identify walkable tiles (`Walkable: true`).\n" +
+                    "   - **Only replace walkable tiles** (ObjectIDs 001 or 003) with the character’s ObjectID.\n" +
+                    "   - Assign a task from `DayTasks`/`NightTasks` based on the current time (2000 → use `NightTasks`).\n" +
+                    "3. Example:\n" +
+                    "   - \"Role\" : \"Farmer\" (101) should be placed on grass (001) with a task like \"resting\".\n" +
+                    "   - \"Role\" : \"Fisher\" (102) should be placed near water (002) but **not on water** (since it’s unwalkable).\n" +
+                    "Format:\n" +
+                    "- Replace ONE walkable tile per character.\n" +
+                    "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
+                    "- Separate cells with `|` and rows with `\\n`. " + 
+                    "JSON Data:\n" +
 
-        /*
-        // TODO: RESTRUCTURE THIS TO BE IN A MORE CONDENSED FORMAT.
-         string prompt =
-            "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
-            "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
-            "to represent EnvironmentTiles. The EnvironmentTiles and their associated ObjectIDs are located " +
-            "in the environment_data.json file provided below. Your task is to place one character for each character " +
-            "type that is specified in the character_data.json file provided below, onto the current_world_grid provided below by simply " +
-            "replacing the EnvironmentTile's ObjectID with the associated character's ObjectID. Each " +
-            "EnvironmentTile in the environment_data.json file provided below has a variable called 'walkable' which indicates " +
-            "whether or a not a character's ObjectID can replace a EnvironmentTile's objectID. Make sure the " +
-            "EnvironmentTile's 'walkable' variable is set to true before you replace the EnvironmentTile's " +
-            "ObjectID with the character's ObjectID. If the EnvironmentalTile's 'walkable' variable is false, " +
-            "then that means the character's ObjectID cannot replace the EnvironmentTile's ObjectID. In addition " +
-            "to that, I would like you to also specify a role for that character in this format: " +
-            "'CharacterID,Task' (e.g., '101,farming'). Make sure the role you specify for each character " +
-            "is a role that is explicitly stated in the 'DayTasks' section of the character_data.json provided below or the " +
-            "'NightTasks' section of the character_data.json provided below for the associated character you are placing. " +
-            "The current time is " + formatted_time + ". If the time is between 0600 and 1759, make sure and use a " +
-            "task that is from the 'DayTasks' section and if there are multiple tasks specified in the 'DayTasks' " +
-            "section of the character_data.json provided below file, pick one that is most relevant to the given situation and " +
-            "position of the character in the current world. If the time is between 1800 and 0559, " +
-            "make sure and use a task that is from the 'NightTasks' section of the character_data.json file provided below" +
-            "and if there are multiple tasks specified in the 'NightTasks' section of the character_data.json file provided below," +
-            "pick one that is most relevant to the given situation and position of the character in the current " +
-            "world. Separate each ID with a pipe '|' symbol and terminate each row with a newline character. Make sure you only " +
-            "provide the 10x10 grid of ObjectIDs that are separated by the pipe '|' symbol and terminated each row with a " +
-            "newline character in your response. Here is a example row for your reference: " +
-            "001|001|001|101,farming|001|001|001|001|001|001|.\n " +
+                    "Here is the environment_data.json file:\n" +
+                    environment_data_string + "\n\n" +
 
-            "Here is the environment_data.json file:\n" +
-            environment_data_string + "\n\n" +
+                    "Here is the character_data.json file:\n" +
+                    character_data_string + "\n\n" +
 
-            "Here is the character_data.json file:\n" +
-            character_data_string + "\n\n" +
+                    "Here is the current_world_grid:\n" + 
+                    world_Grid_String + "\n\n" +
 
-            "Here is the current_world_grid:\n" + 
-            world_Grid_String + "\n\n" +
+                    "Respond only with the 10x10 grid in the format specified."; 
+            /*
+            prompt =
+                "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique " +
+                "positions in the 10x10 grid where the current tile ID in the 'Current World Grid' corresponds to " +
+                "a walkable tile (i.e., 'Walkable': true in 'EnvironmentTiles'). Consider their roles and the environment " +
+                "when choosing positions. Follow these rules:\n" +
+                "'EnvironmentTiles'.\n" +
+                "   - Match the position to the character's 'Role':\n" +
+                "     - Place farmers directly on grass tiles.\n" +
+                "     - Place fishers on walkable tiles adjacent to water tiles.\n" +
+                "   - Ensure no two characters occupy the same position.\n" +
+                "   - Ensure that characters are not on a tile that's walkable variable is marked as 'false'.\n" +
+                " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time " +
+                "is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
+                "   - The current time is " + time_of_day + ".\n" +
+                " - **Grid Update**: For positions without characters, use the tile ID from the 'Current World Grid'.\n" +
+                " - **Format**: Respond with a 10x10 grid where:\n" +
+                "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
+                "   - Cells without characters are the tile ID (e.g., '001').\n" +
+                "   - Separate cells with '|' and end rows with '\\n'.\n" +
+                "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n" +
+                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'. For roles " +
+                "requiring proximity to certain tiles (e.g., fishers near water), place them on adjacent walkable " +
+                "tiles, not on the non-walkable tiles themselves.\n\n" +
+                "Character Data: " + character_data_string + "\n\n" +
+                "Environment Data: " + environment_data_string + "\n\n" +
+                "Current World Grid: " + world_Grid_String + "\n\n" +
+                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
+                "Respond only with the 10x10 grid.";
+            */
+        } else if (current_prompt == Prompt_Selected.PS_Prompt_Descriptive_List) {
+            prompt =
+                "Instructions:\n" +
+                "   1. Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
+                "   character_data.json provided below.\n" +
+                "   2. Below I have provided the current_world_map as it exists. This map contains the ObjectIDs of different\n" +
+                "   EnvironmentTiles that correspond to a specific tile type that is specified in the environment_data.json " +
+                "   file provided below. This map represents the world the characters stand on top of.\n" +
+                "   3. Your task is to replace some of the ObjectIDs of the tiles in the current_world_map with character\n" +
+                "   ObjectIDs. Place once character for each character that is specified in the charater_data.json file.\n" +
+                "   4. Take note of the 'walkable' variable inside of the environoment_data.json file provided below when\n" +
+                "   replacing a tile with a character tile.\n" +
+                "   This value specifies if that tile can be replaced by a character. It is VERY\n" +
+                "   IMPORTANT that the EnvironmentTile ObjectID you replace with the character you are placing has a\n" +
+                "   'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
+                "   and walked on. This will represent the position of the character in the world. " +
+                "   5. Make sure you place the character in a relevant position in the world. Look at the characters role\n" +
+                "   and see if you can have their position reflect their role. (Example: If the character is a fisher, put\n" +
+                "   them near water).\n" +
+                "   6. Provide a task the current character by providing the task type using this format\n" +
+                "   'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
+                "   DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is " +
+                "   " + time_of_day + ". If the time, which is in military time, is between 0600 and 1800, use one of the " +
+                "   character's DayTasks. If it is between 1800 and 0600, use a NightTask." +
+                "Grid Format:\n" +
+                "   1. The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
+                "   2. of the corresponding tile in the current_world_grid, or the newly placed characters ObjectID.\n" +
+                "   3. Separate each ID with a pipe '|' symbol and terminate each row with a newline character '\\n'.\n" +
+                "   4. Here is an example row: 001|001|001|001|001|101,fishing|001|001|001|001|\\n\n" +
+                "   5. It is very important that your response only includes the grid and no additional artifacts.\n\n" +
 
-            "Respond only with the 10x10 grid in the format specified.";
-        */
+                "environment_data.json:\n" +
+                environment_data_string + "\n\n" +
 
-        /*
-        string prompt =
-            "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique " +
-            "positions in the 10x10 grid where the current tile ID in the 'Current World Grid' corresponds to " +
-            "a walkable tile (i.e., 'Walkable': true in 'EnvironmentTiles'). Consider their roles and the environment " +
-            "when choosing positions. Follow these rules:\n" +
-            "'EnvironmentTiles'.\n" +
-            "   - Match the position to the character's 'Role':\n" +
-            "     - Place farmers directly on grass tiles.\n" +
-            "     - Place fishers on walkable tiles adjacent to water tiles.\n" +
-            "   - Ensure no two characters occupy the same position.\n" +
-            "   - Ensure that characters are not on a tile that's walkable variable is marked as 'false'.\n" +
-            " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time " +
-            "is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
-            "   - The current time is " + time_of_day + ".\n" +
-            " - **Grid Update**: For positions without characters, use the tile ID from the 'Current World Grid'.\n" +
-            " - **Format**: Respond with a 10x10 grid where:\n" +
-            "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
-            "   - Cells without characters are the tile ID (e.g., '001').\n" +
-            "   - Separate cells with '|' and end rows with '\\n'.\n" +
-            "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n" +
-            "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'. For roles " +
-            "requiring proximity to certain tiles (e.g., fishers near water), place them on adjacent walkable " +
-            "tiles, not on the non-walkable tiles themselves.\n\n" +
-            "Character Data: " + character_data_string + "\n\n" +
-            "Environment Data: " + environment_data_string + "\n\n" +
-            "Current World Grid: " + world_Grid_String + "\n\n" +
-            "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
-            "Respond only with the 10x10 grid.";
-        */
+                "character_data.json:\n" +
+                character_data_string + "\n\n" +
+
+                "current_world_grid:\n" + 
+                world_Grid_String + "\n\n" +
+
+                "Respond only with the 10x10 grid in the format specified." ;
+        } else
+        {
+            Debug.Log("ERROR: Prompt not initialized.");
+        }
+
 
         // TODO: Add more debug code here
 
