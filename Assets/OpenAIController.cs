@@ -15,8 +15,7 @@ using System.Text;
 using System.Net.Http;
 using Unity.VisualScripting;
 
-// CURRENT TODO: Hook up the second prompt
-// CURRENT TODO: Hook up the third prompt
+// CURRENT TODO: Remoe  
 // TODO: Finish the current iteration of the prompt I am working on
 // TODO: Add names to the different prompt types
 // TODO: Try and settle on 4, but 3 is fine
@@ -27,9 +26,9 @@ using Unity.VisualScripting;
 
 public enum Prompt_Selected
 {
-    PS_Prompt_Paragraph = 1,
-    PS_Prompt_Brief_List, 
-    PS_Prompt_Descriptive_List
+    PS_Paragraph = 1,
+    PS_Brief_List, 
+    PS_Descriptive_List
 }
 
 public class OpenAIController : MonoBehaviour {
@@ -61,7 +60,7 @@ public class OpenAIController : MonoBehaviour {
     public TMP_Text time_display_text;
     const int time_increment = 400;
 
-    const Prompt_Selected current_prompt = Prompt_Selected.PS_Prompt_Descriptive_List;
+    const Prompt_Selected current_prompt = Prompt_Selected.PS_Descriptive_List;
 
     void Start()
     {
@@ -243,7 +242,7 @@ public class OpenAIController : MonoBehaviour {
                 "\n\n" +
 
                 "Respond only with the 10x10 grid.";
-            if (current_prompt == Prompt_Selected.PS_Prompt_Paragraph)
+            if (current_prompt == Prompt_Selected.PS_Paragraph)
             {
                 prompt = "Instructions: Construct a 10x10 grid of EnvironmentTiles, which are provided in the " +
                     "environment_data.json below, that is created based off the description provided" +
@@ -262,7 +261,7 @@ public class OpenAIController : MonoBehaviour {
 
                     "Respond only with the 10x10 grid in the format specified.";
             }
-            else if (current_prompt == Prompt_Selected.PS_Prompt_Brief_List)
+            else if (current_prompt == Prompt_Selected.PS_Brief_List)
             {
                 prompt =
                     "Instructions:\n" +
@@ -282,9 +281,9 @@ public class OpenAIController : MonoBehaviour {
 
                     "Respond only with the 10x10 grid in the format specified.";
             }
-            else if (current_prompt == Prompt_Selected.PS_Prompt_Descriptive_List)
+            else if (current_prompt == Prompt_Selected.PS_Descriptive_List)
             {
-                // Duplicate from PS_Prompt_Brief_List because it is very effective so far
+                // Duplicate from PS_Brief_List because it is very effective so far
                 prompt =
                     "Instructions:\n" +
                     "   1. Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
@@ -384,7 +383,7 @@ public class OpenAIController : MonoBehaviour {
 
 
         string prompt = "";
-        if (current_prompt == Prompt_Selected.PS_Prompt_Paragraph)
+        if (current_prompt == Prompt_Selected.PS_Paragraph)
         {
              prompt =
                 "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
@@ -424,7 +423,7 @@ public class OpenAIController : MonoBehaviour {
                 world_Grid_String + "\n\n" +
 
                 "Respond only with the 10x10 grid in the format specified.";
-        } else if (current_prompt == Prompt_Selected.PS_Prompt_Brief_List) { 
+        } else if (current_prompt == Prompt_Selected.PS_Brief_List) { 
             prompt = 
                 "Instructions: " +
                     "1. Place characters from `character_data.json` onto the `current_world_grid`.\n" +
@@ -482,7 +481,7 @@ public class OpenAIController : MonoBehaviour {
                 "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
                 "Respond only with the 10x10 grid.";
             */
-        } else if (current_prompt == Prompt_Selected.PS_Prompt_Descriptive_List) {
+        } else if (current_prompt == Prompt_Selected.PS_Descriptive_List) {
             prompt =
                 "Instructions:\n" +
                 "   1. Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
@@ -575,7 +574,7 @@ public class OpenAIController : MonoBehaviour {
         {
 
             string prompt = "";
-            if (current_prompt == Prompt_Selected.PS_Prompt_Paragraph)
+            if (current_prompt == Prompt_Selected.PS_Paragraph)
             {
                 prompt =
                     "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
@@ -625,7 +624,7 @@ public class OpenAIController : MonoBehaviour {
                     world_Grid_String + "\n\n" +
 
                     "Respond only with the 10x10 grid in the format specified.";
-            } else if (current_prompt == Prompt_Selected.PS_Prompt_Brief_List) { 
+            } else if (current_prompt == Prompt_Selected.PS_Brief_List) { 
                 prompt = 
                    "Instructions:\n" +
                    "1. For each character in the 10x10 `current_character_grid` provided below:\n" +
@@ -693,7 +692,7 @@ public class OpenAIController : MonoBehaviour {
                     "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'" +
                     "Respond only with the 10x10 grid.";
                 */
-            } else if (current_prompt == Prompt_Selected.PS_Prompt_Descriptive_List) {
+            } else if (current_prompt == Prompt_Selected.PS_Descriptive_List) {
                 prompt =
                     "Instructions:\n" +
                     "   1. Construct a 10x10 grid that updates the position of a character in the current_character_grid\n" +
