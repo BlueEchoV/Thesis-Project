@@ -15,20 +15,20 @@ using System.Text;
 using System.Net.Http;
 using Unity.VisualScripting;
 
-// CURRENT TODO: Remoe  
-// TODO: Finish the current iteration of the prompt I am working on
-// TODO: Add names to the different prompt types
+// CURRENT TODO: Add the name to the 4th prompt type I have commented
+// CURRENT TODO: Implement the dynamic system of the prompt
+// TODO: Finish the fourth iteration of the prompt I am working on
 // TODO: Try and settle on 4, but 3 is fine
-// TODO: Hook up the new method for switching between them easier
 // TODO: Remove the walkable tile from the JSON and document that solution. Make sure to 
 // just create a new json file for them and have a way to switch back and forth. Be descriptive.
 // TODO: Remove the 'role' variable from the character_data.json and see if less helps the model
 
 public enum Prompt_Selected
 {
-    PS_Paragraph = 1,
-    PS_Brief_List, 
-    PS_Descriptive_List
+    PS_Descriptive_Paragraph = 1,
+    PS_Brief_Paragraph,
+    PS_Descriptive_List,
+    PS_Brief_List
 }
 
 public class OpenAIController : MonoBehaviour {
@@ -242,7 +242,7 @@ public class OpenAIController : MonoBehaviour {
                 "\n\n" +
 
                 "Respond only with the 10x10 grid.";
-            if (current_prompt == Prompt_Selected.PS_Paragraph)
+            if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
             {
                 prompt = "Instructions: Construct a 10x10 grid of EnvironmentTiles, which are provided in the " +
                     "environment_data.json below, that is created based off the description provided" +
@@ -383,7 +383,7 @@ public class OpenAIController : MonoBehaviour {
 
 
         string prompt = "";
-        if (current_prompt == Prompt_Selected.PS_Paragraph)
+        if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
         {
              prompt =
                 "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
@@ -574,7 +574,7 @@ public class OpenAIController : MonoBehaviour {
         {
 
             string prompt = "";
-            if (current_prompt == Prompt_Selected.PS_Paragraph)
+            if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
             {
                 prompt =
                     "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
