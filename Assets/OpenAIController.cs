@@ -15,7 +15,6 @@ using System.Text;
 using System.Net.Http;
 using Unity.VisualScripting;
 
-// FUTURE: Hook up second prompt to the new naming convention
 // FUTURE: Hook up third prompt to the new naming convention
 // TODO: Finish the fourth iteration of the prompt I am working on
 // TODO: Try and settle on 4, but 3 is fine
@@ -385,7 +384,38 @@ public class OpenAIController : MonoBehaviour {
 
 
         string prompt = "";
-        if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
+        if (current_prompt == Prompt_Selected.PS_Brief_Paragraph)
+        {
+            prompt =
+                "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique " +
+                "positions in the 10x10 grid where the current tile ID in the 'Current World Grid' corresponds to " +
+                "a walkable tile (i.e., 'Walkable': true in 'EnvironmentTiles'). Consider their roles and the environment " +
+                "when choosing positions. Follow these rules:\n" +
+                "'EnvironmentTiles'.\n" +
+                "   - Match the position to the character's 'Role':\n" +
+                "     - Place farmers directly on grass tiles.\n" +
+                "     - Place fishers on walkable tiles adjacent to water tiles.\n" +
+                "   - Ensure no two characters occupy the same position.\n" +
+                "   - Ensure that characters are not on a tile that's walkable variable is marked as 'false'.\n" +
+                " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time " +
+                "is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
+                "   - The current time is " + time_of_day + ".\n" +
+                " - **Grid Update**: For positions without characters, use the tile ID from the 'Current World Grid'.\n" +
+                " - **Format**: Respond with a 10x10 grid where:\n" +
+                "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
+                "   - Cells without characters are the tile ID (e.g., '001').\n" +
+                "   - Separate cells with '|' and end rows with '\\n'.\n" +
+                "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n" +
+                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'. For roles " +
+                "requiring proximity to certain tiles (e.g., fishers near water), place them on adjacent walkable " +
+                "tiles, not on the non-walkable tiles themselves.\n\n" +
+                "Character Data: " + character_data_string + "\n\n" +
+                "Environment Data: " + environment_data_string + "\n\n" +
+                "Current World Grid: " + world_Grid_String + "\n\n" +
+                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
+                "Respond only with the 10x10 grid.";
+        }
+        else if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
         {
              prompt =
                 "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
@@ -453,36 +483,7 @@ public class OpenAIController : MonoBehaviour {
                     world_Grid_String + "\n\n" +
 
                     "Respond only with the 10x10 grid in the format specified."; 
-            /*
-            prompt =
-                "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique " +
-                "positions in the 10x10 grid where the current tile ID in the 'Current World Grid' corresponds to " +
-                "a walkable tile (i.e., 'Walkable': true in 'EnvironmentTiles'). Consider their roles and the environment " +
-                "when choosing positions. Follow these rules:\n" +
-                "'EnvironmentTiles'.\n" +
-                "   - Match the position to the character's 'Role':\n" +
-                "     - Place farmers directly on grass tiles.\n" +
-                "     - Place fishers on walkable tiles adjacent to water tiles.\n" +
-                "   - Ensure no two characters occupy the same position.\n" +
-                "   - Ensure that characters are not on a tile that's walkable variable is marked as 'false'.\n" +
-                " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time " +
-                "is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
-                "   - The current time is " + time_of_day + ".\n" +
-                " - **Grid Update**: For positions without characters, use the tile ID from the 'Current World Grid'.\n" +
-                " - **Format**: Respond with a 10x10 grid where:\n" +
-                "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
-                "   - Cells without characters are the tile ID (e.g., '001').\n" +
-                "   - Separate cells with '|' and end rows with '\\n'.\n" +
-                "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n" +
-                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'. For roles " +
-                "requiring proximity to certain tiles (e.g., fishers near water), place them on adjacent walkable " +
-                "tiles, not on the non-walkable tiles themselves.\n\n" +
-                "Character Data: " + character_data_string + "\n\n" +
-                "Environment Data: " + environment_data_string + "\n\n" +
-                "Current World Grid: " + world_Grid_String + "\n\n" +
-                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
-                "Respond only with the 10x10 grid.";
-            */
+
         } else if (current_prompt == Prompt_Selected.PS_Descriptive_List) {
             prompt =
                 "Instructions:\n" +
