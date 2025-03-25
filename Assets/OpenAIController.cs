@@ -577,7 +577,40 @@ public class OpenAIController : MonoBehaviour {
         {
 
             string prompt = "";
-            if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
+            if (current_prompt == Prompt_Selected.PS_Brief_Paragraph)
+            {
+                prompt =
+                    "Instructions: Update the positions and tasks of each character in the 'Current Character Grid' " +
+                    "on a 10x10 grid. Follow these rules:\n" +
+                    " - **Movement**: For each character in the 'Current Character Grid':\n" +
+                    "   - Attempt to move them one block (up, down, left, or right) to an adjacent tile that is walkable " +
+                    "(where 'Walkable' is true in 'EnvironmentTiles') and not occupied by another character.\n" +
+                    "   - If a valid move is possible, move the character and replace their previous position with the " +
+                    "tile ID from the 'Original World Grid'. If no valid move is available, keep them in their current" +
+                    " position.\n" +
+                    "   - Ensure all characters occupy unique tiles after movement.\n" +
+                    " - **Tasks**: Assign each character a task based on their 'Role' and the tile they are on or adjacent " +
+                    "to:\n" +
+                    "   - Use 'DayTasks' if the current time (" + time_of_day + ") is 0600-1759, or 'NightTasks' if " +
+                    "1800-0559.\n" +
+                    "   - Example: Farmers get 'farming' on grass tiles, fishers get 'fishing' near water tiles.\n" +
+                    " - **Grid Update**: For tiles without characters, use the tile ID from the 'Original World Grid'.\n" +
+                    " - **Format**: Respond only with a 10x10 grid where:\n" +
+                    "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
+                    "   - Cells without characters are the tile ID (e.g., '001').\n" +
+                    "   - Separate cells with '|' and end rows with '\\n'.\n" +
+                    " - **Note**: Input grids ('Original World Grid' and 'Current Character Grid') are space-separated, " +
+                    "but the response must use '|'.\n\n" +
+                    
+                    "Character Data: " + character_data_string + "\n\n" +
+                    "Environment Data: " + environment_data_string + "\n\n" +
+                    "Original World Grid: " + world_Grid_String + "\n\n" +
+                    "Current Character Grid: " + character_Grid_String + "\n\n" +
+                    
+                    "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'" +
+                    "Respond only with the 10x10 grid.";
+            }
+            else if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
             {
                 prompt =
                     "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
@@ -623,12 +656,14 @@ public class OpenAIController : MonoBehaviour {
                     "Here is the current_character_grid:\n" +
                     character_Grid_String + "\n\n" +
 
-                    "Here is the current_world_grid:\n" + 
+                    "Here is the current_world_grid:\n" +
                     world_Grid_String + "\n\n" +
 
                     "Respond only with the 10x10 grid in the format specified.";
-            } else if (current_prompt == Prompt_Selected.PS_Brief_List) { 
-                prompt = 
+            }
+            else if (current_prompt == Prompt_Selected.PS_Brief_List)
+            {
+                prompt =
                    "Instructions:\n" +
                    "1. For each character in the 10x10 `current_character_grid` provided below:\n" +
                    "   - Check their current position and task (e.g., 101 is the objectID and \"resting\" is the task).\n" +
@@ -644,7 +679,7 @@ public class OpenAIController : MonoBehaviour {
                    "Format:\n" +
                    "- Replace ONE walkable tile per character.\n" +
                    "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
-                   "- Separate cells with `|` and rows with `\\n`. " +  
+                   "- Separate cells with `|` and rows with `\\n`. " +
                    "- Make sure the grid is at most a length of 10x10." +
 
                    "JSON Data:\n" +
@@ -658,44 +693,13 @@ public class OpenAIController : MonoBehaviour {
                    "Here is the current_character_grid:\n" +
                     character_Grid_String + "\n\n" +
 
-                   "Here is the current_world_grid:\n" + 
+                   "Here is the current_world_grid:\n" +
                     world_Grid_String + "\n\n" +
 
                    "Respond ONLY with the updated 10x10 grid with the characters moving one tile in any direction..\n";
-
-                /*
-                string prompt =
-                    "Instructions: Update the positions and tasks of each character in the 'Current Character Grid' " +
-                    "on a 10x10 grid. Follow these rules:\n" +
-                    " - **Movement**: For each character in the 'Current Character Grid':\n" +
-                    "   - Attempt to move them one block (up, down, left, or right) to an adjacent tile that is walkable " +
-                    "(where 'Walkable' is true in 'EnvironmentTiles') and not occupied by another character.\n" +
-                    "   - If a valid move is possible, move the character and replace their previous position with the " +
-                    "tile ID from the 'Original World Grid'. If no valid move is available, keep them in their current" +
-                    " position.\n" +
-                    "   - Ensure all characters occupy unique tiles after movement.\n" +
-                    " - **Tasks**: Assign each character a task based on their 'Role' and the tile they are on or adjacent " +
-                    "to:\n" +
-                    "   - Use 'DayTasks' if the current time (" + time_of_day + ") is 0600-1759, or 'NightTasks' if " +
-                    "1800-0559.\n" +
-                    "   - Example: Farmers get 'farming' on grass tiles, fishers get 'fishing' near water tiles.\n" +
-                    " - **Grid Update**: For tiles without characters, use the tile ID from the 'Original World Grid'.\n" +
-                    " - **Format**: Respond only with a 10x10 grid where:\n" +
-                    "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
-                    "   - Cells without characters are the tile ID (e.g., '001').\n" +
-                    "   - Separate cells with '|' and end rows with '\\n'.\n" +
-                    " - **Note**: Input grids ('Original World Grid' and 'Current Character Grid') are space-separated, " +
-                    "but the response must use '|'.\n\n" +
-                    
-                    "Character Data: " + character_IDs + "\n\n" +
-                    "Environment Data: " + environment_data_string + "\n\n" +
-                    "Original World Grid: " + world_Grid_String + "\n\n" +
-                    "Current Character Grid: " + character_Grid_String + "\n\n" +
-                    
-                    "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'" +
-                    "Respond only with the 10x10 grid.";
-                */
-            } else if (current_prompt == Prompt_Selected.PS_Descriptive_List) {
+            }
+            else if (current_prompt == Prompt_Selected.PS_Descriptive_List)
+            {
                 prompt =
                     "Instructions:\n" +
                     "   1. Construct a 10x10 grid that updates the position of a character in the current_character_grid\n" +
@@ -736,14 +740,15 @@ public class OpenAIController : MonoBehaviour {
                     "character_data.json:\n" +
                     character_data_string + "\n\n" +
 
-                    "current_world_grid:\n" + 
+                    "current_world_grid:\n" +
                     world_Grid_String + "\n\n" +
 
                     "current_character_grid:\n" +
                     character_Grid_String + "\n\n" +
 
-                    "Respond only with the 10x10 grid in the format specified." ;
-            } else
+                    "Respond only with the 10x10 grid in the format specified.";
+            }
+            else
             {
                 Debug.Log("ERROR: Prompt not initialized.");
             }
