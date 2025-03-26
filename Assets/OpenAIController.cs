@@ -43,8 +43,6 @@ public class OpenAIController : MonoBehaviour {
 
     private GameObject[,] instantiated_player_tiles = new GameObject[grid_width, grid_height];
 
-    // For the text rendering of the tasks
-    // Dictionary is a collection of key-value pairs
     private Dictionary<string, Character> characters_by_id = new Dictionary<string, Character>();
 
     // Create a 10x10 character_Grid to hold the IDs (2D array)
@@ -52,12 +50,9 @@ public class OpenAIController : MonoBehaviour {
     string[,] world_grid_global = new string[grid_width, grid_height];
     string[,] character_Grid = new string[grid_width, grid_height];
     string walkable_block_ids;
-    // Not using currently
-    // static string gridGenerationInstructions = "Please generate a 10x10 grid map represented in a text format suitable for parsing. Only provide the map in your response. Format the map as a table with 10 rows and 10 columns, where each cell contains a three-digit ID of the tile or character which are provided in the environmentTiles and characters section. Separate each ID with a pipe '|' symbol and terminate each row with a newline character '\\n'. Include a colon at the end of the entire map. An example row might look like '001|002|003|...|010\\n', and there should be 10 such rows to complete the grid.";
 
     string environment_data_string;
 
-    // Starting time
     public int time_of_day = 0;
     public TMP_Text time_display_text;
     const int time_increment = 400;
@@ -82,7 +77,6 @@ public class OpenAIController : MonoBehaviour {
         InitializeGame().ConfigureAwait(false);
     }
 
-    // Method to update the time variable (call this when time changes)
     public void set_time_of_day(int new_time)
     {
         time_of_day = new_time;
@@ -90,7 +84,7 @@ public class OpenAIController : MonoBehaviour {
         {
             time_of_day = 0;
         }
-        update_time_display(); // Update the UI when the time changes
+        update_time_display(); 
     }
 
     // Method to format and display the time on the UI
@@ -107,7 +101,6 @@ public class OpenAIController : MonoBehaviour {
     private void increment_world_clock()
     {
         int previous_time_of_day = time_of_day;
-        // Increment the time of day
         set_time_of_day(previous_time_of_day + time_increment);
     }
 
@@ -384,7 +377,6 @@ public class OpenAIController : MonoBehaviour {
             "Please respond with only the 10x10 grid of ObjectIDs and no other artifacts."
             ;
         */
-
 
         string prompt = "";
         if (current_prompt == Prompt_Selected.PS_Brief_Paragraph)
