@@ -15,7 +15,10 @@ using System.Text;
 using System.Net.Http;
 using Unity.VisualScripting;
 
-// FUTURE: Hook up third prompt to the new naming convention
+// FUTURE: Do another pass over first prompt
+// FUTURE: Do another pass over second prompt
+// FUTURE: Do another pass over third prompt
+// FUTURE: Do another pass over fourth prompt
 // TODO: Finish the fourth iteration of the prompt I am working on
 // TODO: Try and settle on 4, but 3 is fine
 // TODO: Remove the walkable tile from the JSON and document that solution. Make sure to 
@@ -505,9 +508,9 @@ public class OpenAIController : MonoBehaviour {
                 "   them near water).\n" +
                 "   6. Provide a task the current character by providing the task type using this format\n" +
                 "   'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
-                "   DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is " +
-                "   " + time_of_day + ". If the time, which is in military time, is between 0600 and 1800, use one of the " +
-                "   character's DayTasks. If it is between 1800 and 0600, use a NightTask." +
+                "   DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is\n" +
+                "   " + time_of_day + ". If the time, which is in military time, is between 0600 and 1800, use one of the\n" +
+                "   character's DayTasks. If it is between 1800 and 0600, use a NightTask.\n" +
                 "Grid Format:\n" +
                 "   1. The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
                 "   2. of the corresponding tile in the current_world_grid, or the newly placed characters ObjectID.\n" +
