@@ -15,12 +15,7 @@ using System.Text;
 using System.Net.Http;
 using Unity.VisualScripting;
 
-// FUTURE: Do another pass over first prompt
-// FUTURE: Do another pass over second prompt
-// FUTURE: Do another pass over third prompt
-// FUTURE: Do another pass over fourth prompt
 // TODO: Finish the fourth iteration of the prompt I am working on
-// TODO: Try and settle on 4, but 3 is fine
 // TODO: Remove the walkable tile from the JSON and document that solution. Make sure to 
 // just create a new json file for them and have a way to switch back and forth. Be descriptive.
 // TODO: Remove the 'role' variable from the character_data.json and see if less helps the model
@@ -231,10 +226,10 @@ public class OpenAIController : MonoBehaviour {
                     "where each cell contains a three-digit ObjectID of the tile which are provided in the " +
                     "'EnvironmentTiles' section. Separate each ID with a pipe '|' symbol and terminate each row " +
                     "with a newline character '\\n'" +
-                    "Here is an example row: 001|001|001|001|001|001|001|001|001|001|" +
+                    "Here is an example row: 001|001|001|001|001|001|001|001|001|001|n" +
 
                     "\n\n" +
-                    "environment_data.json: " + environment_data_string +
+                    "Here is the environment_data.json\n" + environment_data_string +
                     "\n\n" +
 
                     "Respond only with the 10x10 grid.";
@@ -485,7 +480,7 @@ public class OpenAIController : MonoBehaviour {
                 "   1. Construct a 10x10 grid that places once character in the grid for each character specified in the \n" +
                 "   character_data.json provided below.\n" +
                 "   2. Below I have provided the current_world_map as it exists. This map contains the ObjectIDs of different\n" +
-                "   EnvironmentTiles that correspond to a specific tile type that is specified in the environment_data.json " +
+                "   EnvironmentTiles that correspond to a specific tile type that is specified in the environment_data.json\n" +
                 "   file provided below. This map represents the world the characters stand on top of.\n" +
                 "   3. Your task is to replace some of the ObjectIDs of the tiles in the current_world_map with character\n" +
                 "   ObjectIDs. Place once character for each character that is specified in the charater_data.json file.\n" +
@@ -494,7 +489,7 @@ public class OpenAIController : MonoBehaviour {
                 "   This value specifies if that tile can be replaced by a character. It is VERY\n" +
                 "   IMPORTANT that the EnvironmentTile ObjectID you replace with the character you are placing has a\n" +
                 "   'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
-                "   and walked on. This will represent the position of the character in the world. " +
+                "   and walked on. This will represent the position of the character in the world.\n" +
                 "   5. Make sure you place the character in a relevant position in the world. Look at the characters role\n" +
                 "   and see if you can have their position reflect their role. (Example: If the character is a fisher, put\n" +
                 "   them near water).\n" +
