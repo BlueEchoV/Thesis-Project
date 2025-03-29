@@ -355,7 +355,9 @@ public class OpenAIController : MonoBehaviour {
             "1. Each value in the grid is a ObjectID that corresponds to either an EnvironmentTile or a Character\n" +
             "   that is specified in the environment_data.json file provided below and the characters_data.json provided\n" +
             "   below.\n" +
-            "2. \n" +
+            "2. Add a character ObjectID for each character that is specified in the charcters_data.json file. When you place\n" +
+            "   a character on the map, make sure you place them in a relivant position in the world that pertains to what\n" +
+            "   the character is doing.\n" +
 
             "This is the environment_data.json file. It contains information about the tiles of the world. Each tile type\n" +
             "has a corresponding ObjectID which represents the tile in the grid.\n" +
@@ -744,40 +746,40 @@ public class OpenAIController : MonoBehaviour {
             }
 
 
-                Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
+            Debug.Log("Prompt " + count + ": Updating Characters\n" + prompt);
 
-                // Send the prompt to ChatGPT
-                Task<ChatResult> chat_gpt_response = SendPromptToChatGPT(prompt);
+            // Send the prompt to ChatGPT
+            Task<ChatResult> chat_gpt_response = SendPromptToChatGPT(prompt);
 
-                // PrintGridToDebug(character_Grid);
-                // Loop through and erase the current character world grid
-                for (int i = 0; i < character_Grid.GetLength(0); i++)
+            // PrintGridToDebug(character_Grid);
+            // Loop through and erase the current character world grid
+            for (int i = 0; i < character_Grid.GetLength(0); i++)
+            {
+                for (int j = 0; j < character_Grid.GetLength(1); j++)
                 {
-                    for (int j = 0; j < character_Grid.GetLength(1); j++)
-                    {
-                        character_Grid[i, j] = "";
-                    }
+                    character_Grid[i, j] = "";
                 }
-                // PrintGridToDebug(character_Grid);
+            }
+            // PrintGridToDebug(character_Grid);
 
-                // Wait until the task is completed (Lambda)
-                yield return new WaitUntil(() => chat_gpt_response.IsCompleted);
+            // Wait until the task is completed (Lambda)
+            yield return new WaitUntil(() => chat_gpt_response.IsCompleted);
 
-                // Process the response
-                if (chat_gpt_response.Status == TaskStatus.RanToCompletion)
-                {
-                    var chat_gpt_result = chat_gpt_response.Result;
-                    Debug.Log("Response " + count + ": Character Placement\n" + chat_gpt_result);
+            // Process the response
+            if (chat_gpt_response.Status == TaskStatus.RanToCompletion)
+            {
+                var chat_gpt_result = chat_gpt_response.Result;
+                Debug.Log("Response " + count + ": Character Placement\n" + chat_gpt_result);
 
-                    InstantiateCharacterGrid(chat_gpt_result.Choices[0].Message.TextContent);
-                    PrintGridToDebug("Instantiation " + count + ": Character Grid Initial", character_Grid);
-                }
+                InstantiateCharacterGrid(chat_gpt_result.Choices[0].Message.TextContent);
+                PrintGridToDebug("Instantiation " + count + ": Character Grid Initial", character_Grid);
+            }
 
-                count++;
+            count++;
 
-                // InstantiateGrid(character_Grid, 1);
-                // Wait for a specified period before updating again
-                yield return new WaitForSeconds(5f);
+            // InstantiateGrid(character_Grid, 1);
+            // Wait for a specified period before updating again
+            yield return new WaitForSeconds(5f);
         }
     }
     private string GetNonWalkableTiles(string environmentData)
