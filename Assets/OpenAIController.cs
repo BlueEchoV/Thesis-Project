@@ -346,34 +346,6 @@ public class OpenAIController : MonoBehaviour {
         // TODO: Try putting the data before the prompt?
 
         // Work in progress
-        /*
-        string prompt =
-            "Instructions:\n" +
-            "Construct a 10x10 grid of ObjectIDs. The format of the grid is provided here:\n\n" +
-
-            "Grid Format:\n" +
-            "1. Each value in the grid is a ObjectID that corresponds to either an EnvironmentTile or a Character\n" +
-            "   that is specified in the environment_data.json file provided below and the characters_data.json provided\n" +
-            "   below.\n" +
-            "2. Add a character ObjectID for each character that is specified in the charcters_data.json file. When you place\n" +
-            "   a character on the map, make sure you place them in a relevant position in the world that pertains to what\n" +
-            "   the character is doing.\n" +
-
-            "This is the environment_data.json file. It contains information about the tiles of the world. Each tile type\n" +
-            "has a corresponding ObjectID which represents the tile in the grid.\n" +
-            environment_data_string + "\n\n" +
-
-            "This is the character_data.json file. It contains information about the characters in the world. Each character\n" +
-            "type has a corresponding ObjectID which represents the character in the world and where they are in the grid.\n" +
-            "character_data.json:\n" +
-            character_data_string + "\n\n" +
-
-            "current_world_grid:\n" + 
-            world_Grid_String + "\n\n" +
-
-            "Please respond with only the 10x10 grid of ObjectIDs and no other artifacts."
-            ;
-        */
 
         string prompt = "";
         if (current_prompt == Prompt_Selected.PS_Brief_Paragraph)
