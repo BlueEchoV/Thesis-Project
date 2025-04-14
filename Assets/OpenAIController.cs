@@ -356,7 +356,7 @@ public class OpenAIController : MonoBehaviour {
             "   that is specified in the environment_data.json file provided below and the characters_data.json provided\n" +
             "   below.\n" +
             "2. Add a character ObjectID for each character that is specified in the charcters_data.json file. When you place\n" +
-            "   a character on the map, make sure you place them in a relivant position in the world that pertains to what\n" +
+            "   a character on the map, make sure you place them in a relevant position in the world that pertains to what\n" +
             "   the character is doing.\n" +
 
             "This is the environment_data.json file. It contains information about the tiles of the world. Each tile type\n" +
