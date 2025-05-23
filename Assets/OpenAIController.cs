@@ -52,7 +52,7 @@ public class OpenAIController : MonoBehaviour {
     public TMP_Text time_display_text;
     const int time_increment = 400;
 
-    const Prompt_Selected current_prompt = Prompt_Selected.PS_Brief_Paragraph;
+    const Prompt_Selected current_prompt = Prompt_Selected.PS_Descriptive_List;
 
     void Start()
     {
@@ -603,7 +603,8 @@ public class OpenAIController : MonoBehaviour {
                     "movement. For tasks, assign each character a task based on their 'Role' and the tile they are on or " +
                     "adjacent to, using 'DayTasks' if the current time (provided as a variable) is between 0600 and 1759, " +
                     "or 'NightTasks' if between 1800 and 0559; for example, farmers get 'farming' on grass tiles, and " +
-                    "fishers get 'fishing' near water tiles. For the grid update, use the tile ID from the 'Original World " +
+                    "fishers get 'fishing' near water tiles. The current time of day is " + formatted_time + "For the " +
+                    "grid update, use the tile ID from the 'Original World " +
                     "Grid' for tiles without characters. Format the response as a 10x10 grid where cells with characters are " +
                     "'CharacterID,Task' (e.g., '101,farming') and cells without characters are the tile ID (e.g., '001'), " +
                     "separating cells with '|' and ending rows with '\n'. Note that the input grids ('Original World Grid' " +

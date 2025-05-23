@@ -13,7 +13,7 @@ namespace CityPeople
         void Start()
         {
             animator = GetComponent<Animator>();
-            Debug.Log("Animation script is running.");
+            // Debug.Log("Animation script is running.");
             if (animator != null)
             {
                 AnimationClip idleClip = animator.runtimeAnimatorController.animationClips
