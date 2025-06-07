@@ -1,4 +1,4 @@
-﻿using OpenAI_API;
+using OpenAI_API;
 using OpenAI_API.Chat;
 using OpenAI_API.Models;
 using System;
@@ -53,10 +53,7 @@ public class OpenAIController : MonoBehaviour {
     public TMP_Text time_display_text;
     const int time_increment = 400;
 
-    // const Prompt_Selected current_prompt = Prompt_Selected.PS_Brief_Paragraph;
-    // const Prompt_Selected current_prompt = Prompt_Selected.PS_Descriptive_Paragraph;
-    // const Prompt_Selected current_prompt = Prompt_Selected.PS_Brief_List;
-    const Prompt_Selected current_prompt = Prompt_Selected.PS_Descriptive_List;
+    const Prompt_Selected current_prompt = Prompt_Selected.PS_Brief_Paragraph;
 
     void Start()
     {
@@ -75,6 +72,18 @@ public class OpenAIController : MonoBehaviour {
 
         InitializeGame().ConfigureAwait(false);
     }
+
+    public void set_time_of_day(int new_time)
+    {
+        time_of_day = new_time;
+        if (time_of_day >= 2400)
+        {
+            time_of_day = 0;
+        }
+        update_time_display(); 
+    }
+
+    // Method to format and display the time on the UI
     private void update_time_display()
     {
         // Format the time (e.g., 1300 -> "13:00", 900 -> "9:00")
@@ -85,22 +94,6 @@ public class OpenAIController : MonoBehaviour {
         // Set the text on the TMP_Text component
         time_display_text.text = formattedTime;
     }
-    private void set_time_of_day(int newTime)
-    {
-        // normalise to 0-2399 first (handles negatives too)
-        newTime = ((newTime % 2400) + 2400) % 2400;
-
-        int hours   =  newTime / 100;
-        int minutes =  newTime % 100;
-
-        hours   += minutes / 60;
-        minutes  = minutes % 60;
-
-        time_of_day = (hours % 24) * 100 + minutes;
-        Debug.Log($"[{System.Threading.Thread.CurrentThread.ManagedThreadId}] clock = {time_of_day:D4}");
-        update_time_display();
-    }
-    // Method to format and display the time on the UI
     private void increment_world_clock()
     {
         int previous_time_of_day = time_of_day;
@@ -233,8 +226,8 @@ public class OpenAIController : MonoBehaviour {
                     "environment_data.json file provided below. Format the grid as a table " +
                     "with 10 rows and 10 columns, where each cell contains three-digit " +
                     "ObjectID of the TileType which are provided in the environment_data.json " +
-                    "file. Separate each ID with a pipe | symbol and terminate each row with " +
-                    "a newline character \\n. Here is an example row: " +
+                    "file. Separate each ID with a pipe '|' symbol and terminate each row with " +
+                    "a newline character '\\n'. Here is an example row: " +
                     "001|001|001|001|001|001|001|001|001|001\\n\n" +
                     "Here is the environment_data.json\n\n" +
 
@@ -279,7 +272,7 @@ public class OpenAIController : MonoBehaviour {
                     "Grid Format:\n" + 
                     "1. The grid should have 10 rows and 10 columns, where each cell contains " +
                     "the three-digit ObjectId of the corresponding TileType. Separate each " +
-                    "ObjectID with a pipe | symbol and terminate each row with a newline " +
+                    "ObjectID with a pipe |’ symbol and terminate each row with a newline " +
                     "character \\n. Here is an example row: " +
                     "001|001|001|001|001|001|001|001|001|001|\\n\n" +
                     "2. Only respond with the 10x10 grid." + 
@@ -366,7 +359,6 @@ public class OpenAIController : MonoBehaviour {
         string world_Grid_String = GridToString(world_grid_global);
 
         string formatted_time = time_of_day.ToString("D4");
-        increment_world_clock();
 
         string prompt = "";
         if (current_prompt == Prompt_Selected.PS_Brief_Paragraph)
@@ -383,10 +375,7 @@ public class OpenAIController : MonoBehaviour {
                 "DayTasks when the current time, which is " + formatted_time + " is " +
                 "between 0600 and 1759, otherwise from NightTasks. Leave all other tiles " +
                 "unchanged. Return only the updated grid: 10 rows separated by " +
-                "newlines, separate cells with | and end each row with \\n\n" +
-
-                "For clarity, a nighttime grid row might look like this: " +
-                "001|001|001|101,resting|001|001|001|001|001|001|\\n\n" +
+                "newlines, cells separated by the pipe symbol |, with no extra text.\n" +
 
                 "The current world time is - " + formatted_time + ".\n" +
 
@@ -430,7 +419,8 @@ public class OpenAIController : MonoBehaviour {
                 "0600 and 1759, otherwise choose from NightTasks. " +
 
                 "For clarity, a nighttime grid row might look like this: " +
-                "001|001|001|101,resting|001|001|001|001|001|001|\\n\n" +
+                "001|001|001|101,resting|001|001|001|001|001|001|\\n. The full data blocks " +
+                "are reproduced below for your convenience:\n" +
 
                 "Here is the environment_data.json file:\n" +
                 environment_data_string + "\n\n" +
@@ -464,11 +454,12 @@ public class OpenAIController : MonoBehaviour {
                 "4. Output grid\n" +
                 "- 10 rows × 10 columns.\n" +
                 "- Each cell holds a three-digit ID or CharacterID,Task.\n" +
-                "- Separate cells with | and end each row with \\n\n" +
+                "- Separate cells with |; end each row with \\n.\n" +
                 "- Respond only with the grid—no extra text.\n" +
 
                 "For clarity, a nighttime grid row might look like this: " +
-                "001|001|001|101,resting|001|001|001|001|001|001|\\n\n" +
+                "001|001|001|101,resting|001|001|001|001|001|001|\\n. The full data blocks " +
+                "are reproduced below for your convenience:\n" +
 
                 "Here is the environment_data.json file:\n" +
                 environment_data_string + "\n\n" +
@@ -571,6 +562,7 @@ public class OpenAIController : MonoBehaviour {
 
         string character_Grid_String = GridToString(character_Grid);
         string world_Grid_String = GridToString(world_grid_global);
+
         string formatted_time = time_of_day.ToString("D4");
 
         // Debug.Log("Character_IDs\n" + character_IDs);
@@ -581,8 +573,6 @@ public class OpenAIController : MonoBehaviour {
         while (true)
         {
 
-            increment_world_clock();
-            formatted_time = time_of_day.ToString("D4");
             string prompt = "";
             if (current_prompt == Prompt_Selected.PS_Brief_Paragraph)
             {
@@ -597,12 +587,13 @@ public class OpenAIController : MonoBehaviour {
                     "current Task and the BackgroundStory. Replace the destination tile's " +
                     "ObjectID with CharacterID,Task, choosing Task from DayTasks when HHMM is " +
                     "0600-1759, otherwise from NightTasks, and pick the task that makes the most " +
-                    "narrative sense. Leave all other cells unchanged. Respond only with the updated 10 × 10 grid, " +
-                    "using three-digit EnvironmentTile IDs or CharacterID,Task pairs, separating " +
-                    "cells with | and ending each row with a newline (\\n)." +
+                    "narrative sense. Leave all other cells unchanged. Return only the updated " +
+                    "10 x 10 grid: ten newline-separated rows with cells separated by the pipe " +
+                    "symbol | and no extra text." +
 
                     "For clarity, a nighttime grid row might look like this: " +
-                    "001|001|001|101,resting|001|001|001|001|001|001|\\n\n" +
+                    "001|001|001|101,resting|001|001|001|001|001|001|\\n. The full data blocks " +
+                    "are reproduced below for your convenience:\n" +
                     
                     "The current world time is - " + formatted_time + ".\n" +
 
@@ -675,24 +666,19 @@ public class OpenAIController : MonoBehaviour {
                     "- character_data.json – CharacterID, Role, DayTasks, NightTasks\n" +
                     "- Non-walkable tile list – ObjectIDs that cannot hold characters\n" +
                     "Movement rules\n" +
-                    "- Daytime (0600 – 1759): move each character one adjacent tile (N, S, E, W) " +
-                    "to a square with walkable = true, not in the non-walkable list, and thematically " +
-                    "suitable for the Role.\n" +
+                    "- Daytime (0600 – 1759): move each character one adjacent tile (N, S, E, W) to a square with walkable = true, not in the non-walkable list, and thematically suitable for the Role.\n" +
                     "- Nighttime (1800 – 0559): do not move any characters.\n" +
                     "- If no valid adjacent tile exists, keep the character in place.\n" +
                     "Task assignment\n" +
                     "- Format: CharacterID,Task (e.g., 101,fishing).\n" +
-                    "- Daytime -> choose from the character’s DayTasks.\n" +
-                    "- Nighttime -> set task to resting (or another NightTask marked “resting” if provided).\n" +
+                    "- Daytime → choose from the character’s DayTasks.\n" +
+                    "- Nighttime → set task to resting (or another NightTask marked “resting” if provided).\n" +
                     "Grid output\n" +
                     "- Return only the 10 rows × 10 columns.\n" +
                     "- Each cell is either a three-digit tile ObjectID or CharacterID,Task.\n" +
                     "- Separate cells with | and end each row with \\n.\n" +
                     "- Respond only with the updated grid—no extra text.\n" +
                              
-                    "For clarity, a nighttime grid row might look like this: " +
-                    "001|001|001|101,resting|001|001|001|001|001|001|\\n\n" +
-
                     "The current world time is - " + formatted_time + ".\n" +
 
                     "Here is the environment_data.json file:\n" +
@@ -1116,6 +1102,7 @@ public class OpenAIController : MonoBehaviour {
                 }
             });
 
+            increment_world_clock();
             // Return the text content of the response
             return chat_gpt_result;
         }
