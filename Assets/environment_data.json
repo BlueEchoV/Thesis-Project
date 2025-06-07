@@ -1,35 +1,32 @@
 {
-   "BackgroundStory": "Create a grass area with a small pond and some flowers surrounding the pond and one house anywhere you see fit.",
+   "BackgroundStory": "Create a grass area with multiple houses and some flowers whereever it looks the best.",
     "EnvironmentTiles": [
         {
             "ObjectID": "001",
-            "EnvironmentModelName": "Grass",
-            "Type": "Environment Tile",
+            "TileType": "Grass",
             "Walkable": true
         },
+        /*
         {
             "ObjectID": "002",
-            "EnvironmentModelName": "Water",
             "Type": "Environment Tile",
             "Walkable": false
         },
+       */
         {
             "ObjectID": "003",
-            "EnvironmentModelName": "Rock",
-            "Type": "Environment Tile",
+            "TileType": "Rock",
             "Walkable": true
         },
         {
             "ObjectID": "004",
-            "EnvironmentModelName": "House",
-            "Type": "Environment Tile",
+            "TileType": "House",
             "Walkable": false
         },
         {
             "ObjectID": "005",
-            "EnvironmentModelName": "Flowers",
-            "Type": "Environment Tile",
-            "Walkable": false
+            "TileType": "Flowers",
+            "Walkable": true 
         }
     ]
 }

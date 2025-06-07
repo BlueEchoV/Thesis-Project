@@ -12,8 +12,8 @@
             "ObjectID": "102",
             "Type": "Character",
             "CharacterModelName": "Civilian Woman",
-            "Role": "Fisher",
-            "DayTasks": ["fishing", "trading"],
+            "Role": "Chef",
+            "DayTasks": ["cooking", "shopping"],
             "NightTasks": ["resting"]
         }
     ]

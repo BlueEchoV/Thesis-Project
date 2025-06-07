@@ -14,6 +14,7 @@ using System.Text;
 
 using System.Net.Http;
 using Unity.VisualScripting;
+using UnityEngine.UIElements;
 
 // TODO: Finish the fourth iteration of the prompt I am working on
 // TODO: Remove the walkable tile from the JSON and document that solution. Make sure to 
@@ -52,7 +53,7 @@ public class OpenAIController : MonoBehaviour {
     public TMP_Text time_display_text;
     const int time_increment = 400;
 
-    const Prompt_Selected current_prompt = Prompt_Selected.PS_Descriptive_List;
+    const Prompt_Selected current_prompt = Prompt_Selected.PS_Brief_Paragraph;
 
     void Start()
     {
@@ -124,8 +125,7 @@ public class OpenAIController : MonoBehaviour {
     public class EnvironmentTile
     {
         public string ObjectID { get; set; }
-        public string EnvironmentModelName { get; set; }
-        public string Type { get; set; }
+        public string TileType { get; set; }
         public bool Walkable { get; set; }
     }
 
@@ -218,83 +218,100 @@ public class OpenAIController : MonoBehaviour {
             string prompt = "";
             if (current_prompt == Prompt_Selected.PS_Brief_Paragraph) {
                 prompt =
-                    "Construct the grid based on the description provided in the 'BackgroundStory' section " +
-                    "of the environment_data.json file. Construct it using the tiles specified in the json file. Each " +
-                    "EnvironmentTile has an associated ObjectID. Use this ObjectID in the construction of the grid. Make " +
-                    "sure the 10x10 grid is represented in a text format suitable for parsing. Only provide the " +
-                    "grid in your response. Format the grid as a table with 10 rows and 10 columns, " +
-                    "where each cell contains a three-digit ObjectID of the tile which are provided in the " +
-                    "'EnvironmentTiles' section. Separate each ID with a pipe '|' symbol and terminate each row " +
-                    "with a newline character '\\n'" +
-                    "Here is an example row: 001|001|001|001|001|001|001|001|001|001|n" +
+                    "Construct a 10x10 grid of ObjectIDs that represents a 2D game world. " +
+                    "The ObjectIDs are provided in the environment_data.json file in the " +
+                    "EnvironmentTiles section. Each ObjectID corresponds to a different " +
+                    "TileType. The game world you construct should be constructed based on " +
+                    "the BackgroundStory description that is provided in the " +
+                    "environment_data.json file provided below. Format the grid as a table " +
+                    "with 10 rows and 10 columns, where each cell contains three-digit " +
+                    "ObjectID of the TileType which are provided in the environment_data.json " +
+                    "file. Separate each ID with a pipe '|' symbol and terminate each row with " +
+                    "a newline character '\\n'. Here is an example row: " +
+                    "001|001|001|001|001|001|001|001|001|001\\n\n" +
+                    "Here is the environment_data.json\n\n" +
 
-                    "\n\n" +
-                    "Here is the environment_data.json\n" + environment_data_string +
-                    "\n\n" +
+                    environment_data_string + "\n\n" +
 
                     "Respond only with the 10x10 grid.";
-                }
+
+            }
             else if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
             {
-                prompt = "Construct a 10x10 grid of EnvironmentTiles, which are provided in the " +
-                    "environment_data.json below, that is created based off the description provided" +
-                    "in the 'BackgroundStory' section of the envirnoment_data.json. Construct the " +
-                    "grid using the EnvironmentTiles that are specified in the json file. Each of the EnvironmentTiles " +
-                    "has an associated ObjectID variable. Use this ObjectID to create the grid. Each ObjectID corresponds " +
-                    "to a specific tile type. Make sure the 10x10 grid is represented in a text format suitable for " +
-                    "parsing. Only provide the grid in your response, with no additional text or artifacts. Format " +
-                    "the grid as a table with 10 rows and 10 columns, where each cell contains the three-digit ObjectID " +
-                    "of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a " +
-                    "newline character '\\n'. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\n" +
+                prompt = 
+                    "Construct a 10x10 grid of ObjectIDs that represents a 2D game world. " +
+                    "Make note of the environment_data.json file that I have provided later " +
+                    "in this prompt. The ObjectIDs are provided in this environment_data.json " +
+                    "file, in the EnvironmentTiles section. Each ObjectID corresponds to a " +
+                    "different TileType. The TileTypes represent the world blocks like grass, " +
+                    "rock, etc. The BackgroundStory section of the environment_data.json file " +
+                    "provides a description of the game world. The 10x10 grid of the 2D game " +
+                    "world you construct should be constructed based on the BackgroundStory " +
+                    "description that is provided in the environment_data.json file provided " +
+                    "below. Format the grid as a table with 10 rows and 10 columns, where each " +
+                    "cell contains three-digit ObjectID of the TileType which are provided in " +
+                    "the environment_data.json file. Separate each ID with a pipe | symbol " +
+                    "and terminate each row with a newline character \\n. Here is an example " +
+                    "row: 001|001|001|001|001|001|001|001|001|001\\n\n" + 
+                    "Here is the environment_data.json\n\n" +
 
-                    "Here is the environment_data.json file:\n" +
+                    environment_data_string + "\n\n" +
 
-                    environment_data_string +
-
-                    "Respond only with the 10x10 grid in the format specified.";
+                    "Respond only with the 10x10 grid.";            
             }
             else if (current_prompt == Prompt_Selected.PS_Brief_List)
             {
                 prompt =
-                    "Instructions:\n" +
-                    "   1. Construct a 10x10 grid of ObjectIDs that correspond to the EnvironmentTiles provided in the\n" +
-                    "   environment_data.json file below.\n" +
-                    "   2. The grid of ObjectIDs that correspond to the EnvironmentTiles should should be based off\n" +
-                    "   of the 'BackgroundStroy' section of the environment_data.json file provided below.\n" +
-                    "Grid Format:\n" +
-                    "   1. The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
-                    "   of the corresponding tile. Separate each ID with a pipe '|' symbol and terminate each row with a\n" +
-                    "   2. newline character '\\n'.\n" +
-                    "   3. Here is an example row: 001|001|001|001|001|001|001|001|001|001|\\n\n" +
-                    "   4. It is very important that your response only includes the grid and no additional artifacts.\n\n" +
-                    "environment_data.json:\n" +
+                    "Instructions:\n" + 
+                    "1. The BackgroundStory section in the environment_data.json file provided " +
+                    "below contains a description of what the game world should look like.\n" + 
+                    "2. Using the BackgroundStory, construct a 10x10 grid of ObjectIDs that " +
+                    "represents a 2D game world. The ObjectIDs are provided in the " +
+                    "environment_data.json file in the EnvironmentTiles section. Each ObjectID " +
+                    "corresponds to a different TileType.\n" + 
+                    "Grid Format:\n" + 
+                    "1. The grid should have 10 rows and 10 columns, where each cell contains " +
+                    "the three-digit ObjectId of the corresponding TileType. Separate each " +
+                    "ObjectID with a pipe |’ symbol and terminate each row with a newline " +
+                    "character \\n. Here is an example row: " +
+                    "001|001|001|001|001|001|001|001|001|001|\\n\n" +
+                    "2. Only respond with the 10x10 grid." + 
+                    "Here is the environment_data.json\n\n" +
 
-                    environment_data_string + "\n" +
+                    environment_data_string + "\n\n" +
 
-                    "Respond only with the 10x10 grid in the format specified.";
+                    "Respond only with the 10x10 grid.";     
             }
             else if (current_prompt == Prompt_Selected.PS_Descriptive_List)
             {
                 // Duplicate from PS_Brief_List because it is very effective so far
                 prompt =
-                    "Instructions:\n" +
-                    "1. Read the 'BackgroundStory' in environment_data.json to understand the environment’s layout.\n" +
-                    "   - Check for mentions of terrain like rivers or villages.\n" +
-                    "2. Choose ObjectIDs from 'EnvironmentTiles' to represent the story’s features.\n" +
-                    "3. Build a 10x10 grid that matches the story’s description.\n" +
-                    "   - Place tiles to show the story.\n" +
-                    "4. Format the grid:\n" +
-                    "   - Use 10 rows and 10 columns.\n" +
-                    "   - Put a three-digit ObjectID in each cell.\n" +
-                    "   - Separate ObjectIDs with '|'.\n" +
-                    "   - End each row with '\\n'.\n" +
-                    "   - Example row: 001|001|001|001|001|001|001|001|001|001|\\n\n" +
-                    "5. Respond only with the grid.\n\n" +
-                    "Here is the environment_data.json:\n" + 
-                    
+                    "Instructions:\n" + 
+                    "1. The BackgroundStory section in the environment_data.json file provided " +
+                    "later in this prompt contains two sections titled BackgroundStory and " +
+                    "EnvironmentTiles. The BackgroundStory section contains a description of " +
+                    "what the 10x10 grid of the 2D game world should look like. The " +
+                    "EnvironmentTiles sections contain the TileTypes with their corresponding " +
+                    "ObjectIDs and other relevant variables.\n" + 
+                    "2. The grid needs to visually represent the BackgroundStory. Using the " +
+                    "BackgroundStory, construct a 10x10 grid of ObjectIDs that represents a " +
+                    "2D game world. The ObjectIDs are provided in the environment_data.json " +
+                    "file in the EnvironmentTiles section of the json file provided later in " +
+                    "this prompt. Each ObjectID corresponds to a different TileType. The " +
+                    "TileTypes represent the world blocks like grass, rock, etc.\n" +
+                    "Grid Format:\n" +
+                    "1. The grid should have 10 rows and 10 columns, where each cell contains " +
+                    "the three-digit ObjectId of the corresponding TileType. Separate each " +
+                    "ObjectID with a pipe ‘|’ symbol and terminate each row with a newline " +
+                    "character ‘\\n’. Here is an example row: " +
+                    "001|001|001|001|001|001|001|001|001|001|\\n\n" +
+                    "2. It is very important that you only respond with the 10x10 grid and no " +
+                    "additional text or artifact.\n" +
+                    "Here is the environment_data.json\n\n" +
+
                     environment_data_string + "\n\n" +
 
-                    "Respond only with the 10x10 grid in the format specified.";
+                    "Respond only with the 10x10 grid.";   
             }
             else
             {
@@ -334,141 +351,109 @@ public class OpenAIController : MonoBehaviour {
     }
 
     // NOTE: SECOND GENERATION PROMPT
-    private async Task PlaceCharactersInWorldAndUpdate(string file_path_initial_placement)
+    private async Task PlaceCharactersInWorldAndUpdate(string character_data_json)
     {
         // Debug.Log("Inside PlaceCharactersInWorldCoroutine");
-        CharacterData initial_placement = LoadCharacterDataFromJson(file_path_initial_placement);
-        string character_data_string = JsonConvert.SerializeObject(initial_placement, Formatting.None);
+        CharacterData character_data_json_loaded = LoadCharacterDataFromJson(character_data_json);
+        string character_data_string = JsonConvert.SerializeObject(character_data_json_loaded , Formatting.None);
         string world_Grid_String = GridToString(world_grid_global);
 
         string formatted_time = time_of_day.ToString("D4");
-
-        // TODO: A new format of prompt that tries focusing more on ties everything to one core entity?
-        // TODO: Repeat core rules multiple times? (Walkable above and before the file?
-        // TODO: Try putting the data before the prompt?
-
-        // Work in progress
-        /*
-        string prompt =
-            "Instructions:\n" +
-            "Construct a 10x10 grid of ObjectIDs. The format of the grid is provided here:\n\n" +
-
-            "Grid Format:\n" +
-            "1. Each value in the grid is a ObjectID that corresponds to either an EnvironmentTile or a Character\n" +
-            "   that is specified in the environment_data.json file provided below and the characters_data.json provided\n" +
-            "   below.\n" +
-            "2. Add a character ObjectID for each character that is specified in the charcters_data.json file. When you place\n" +
-            "   a character on the map, make sure you place them in a relevant position in the world that pertains to what\n" +
-            "   the character is doing.\n" +
-
-            "This is the environment_data.json file. It contains information about the tiles of the world. Each tile type\n" +
-            "has a corresponding ObjectID which represents the tile in the grid.\n" +
-            environment_data_string + "\n\n" +
-
-            "This is the character_data.json file. It contains information about the characters in the world. Each character\n" +
-            "type has a corresponding ObjectID which represents the character in the world and where they are in the grid.\n" +
-            "character_data.json:\n" +
-            character_data_string + "\n\n" +
-
-            "current_world_grid:\n" + 
-            world_Grid_String + "\n\n" +
-
-            "Please respond with only the 10x10 grid of ObjectIDs and no other artifacts."
-            ;
-        */
 
         string prompt = "";
         if (current_prompt == Prompt_Selected.PS_Brief_Paragraph)
         {
             prompt =
-                "Place each character from the 'Characters' list in the provided JSON onto unique positions in the \n" +
-                "10x10 grid where the current tile ID in the 'Current World Grid' corresponds to a walkable tile \n" +
-                "(i.e., 'Walkable': true in 'EnvironmentTiles'). Consider their roles and the environment when \n" +
-                "choosing positions. Follow these rules: 'EnvironmentTiles'. Match the position to the character's \n" +
-                "'Role' by placing farmers directly on grass tiles and placing fishers on walkable tiles adjacent \n" +
-                "to water tiles. Ensure no two characters occupy the same position. Ensure that characters are not \n" +
-                "on a tile that's walkable variable is marked as 'false'. For tasks, assign each character a task by \n" +
-                "selecting one from their 'DayTasks' if the current time is between 0600 and 1759, or from their \n" +
-                "'NightTasks' if between 1800 and 0559. The current time is " + time_of_day + ". For grid update, \n" +
-                "use the tile ID from the 'Current World Grid' for positions without characters. Format the response \n" +
-                "with a 10x10 grid where cells with characters are 'CharacterID,Task' (e.g., '101,farming') and cells \n" +
-                "without characters are the tile ID (e.g., '001'), separating cells with '|' and ending rows with '\n'. \n" +
-                "An example row is: 001|001|001|101,gathering_resources|001|001|001|001|001|001|.\n\n" +
-                "Character Data: " + character_data_string + "\n\n" +
-                "Environment Data: " + environment_data_string + "\n\n" +
-                "Current World Grid: " + world_Grid_String + "\n\n" +
-                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
-                "Respond only with the 10x10 grid.";
-/*
-                "Instructions: Place each character from the 'Characters' list in the provided JSON onto unique " +
-                "positions in the 10x10 grid where the current tile ID in the 'Current World Grid' corresponds to " +
-                "a walkable tile (i.e., 'Walkable': true in 'EnvironmentTiles'). Consider their roles and the environment " +
-                "when choosing positions. Follow these rules:\n" +
-                "'EnvironmentTiles'.\n" +
-                "   - Match the position to the character's 'Role':\n" +
-                "     - Place farmers directly on grass tiles.\n" +
-                "     - Place fishers on walkable tiles adjacent to water tiles.\n" +
-                "   - Ensure no two characters occupy the same position.\n" +
-                "   - Ensure that characters are not on a tile that's walkable variable is marked as 'false'.\n" +
-                " - **Tasks**: Assign each character a task by selecting one from their 'DayTasks' if the current time " +
-                "is between 0600 and 1759, or from their 'NightTasks' if between 1800 and 0559.\n" +
-                "   - The current time is " + time_of_day + ".\n" +
-                " - **Grid Update**: For positions without characters, use the tile ID from the 'Current World Grid'.\n" +
-                " - **Format**: Respond with a 10x10 grid where:\n" +
-                "   - Cells with characters are 'CharacterID,Task' (e.g., '101,farming').\n" +
-                "   - Cells without characters are the tile ID (e.g., '001').\n" +
-                "   - Separate cells with '|' and end rows with '\\n'.\n" +
-                "   - Example row: 001|001|001|101,gathering_resources|001|001|001|001|001|001|\n" +
-                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'. For roles " +
-                "requiring proximity to certain tiles (e.g., fishers near water), place them on adjacent walkable " +
-                "tiles, not on the non-walkable tiles themselves.\n\n" +
-                "Character Data: " + character_data_string + "\n\n" +
-                "Environment Data: " + environment_data_string + "\n\n" +
-                "Current World Grid: " + world_Grid_String + "\n\n" +
-                "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'.\n" + 
-                "Respond only with the 10x10 grid.";
-*/
-        }
-        else if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
-        {
-             prompt =
-                "Instructions: I've provided the current_world_grid below, which is a 10x10 grid of ObjectIDs. " +
-                "The current_world_grid provided below represents the current world, which contains ObjectIDs that are used to " +
-                "to represent EnvironmentTiles. The EnvironmentTiles and their associated ObjectIDs are located " +
-                "in the environment_data.json file provided below. Your task is to place one character for each character " +
-                "type that is specified in the character_data.json file provided below, onto the current_world_grid provided below by simply " +
-                "replacing the EnvironmentTile's ObjectID with the associated character's ObjectID. Each " +
-                "EnvironmentTile in the environment_data.json file provided below has a variable called 'walkable' which indicates " +
-                "whether or a not a character's ObjectID can replace a EnvironmentTile's objectID. Make sure the " +
-                "EnvironmentTile's 'walkable' variable is set to true before you replace the EnvironmentTile's " +
-                "ObjectID with the character's ObjectID. If the EnvironmentalTile's 'walkable' variable is false, " +
-                "then that means the character's ObjectID cannot replace the EnvironmentTile's ObjectID. In addition " +
-                "to that, I would like you to also specify a role for that character in this format: " +
-                "'CharacterID,Task' (e.g., '101,farming'). Make sure the role you specify for each character " +
-                "is a role that is explicitly stated in the 'DayTasks' section of the character_data.json provided below or the " +
-                "'NightTasks' section of the character_data.json provided below for the associated character you are placing. " +
-                "The current time is " + formatted_time + ". If the time is between 0600 and 1759, make sure and use a " +
-                "task that is from the 'DayTasks' section and if there are multiple tasks specified in the 'DayTasks' " +
-                "section of the character_data.json provided below file, pick one that is most relevant to the given situation and " +
-                "position of the character in the current world. If the time is between 1800 and 0559, " +
-                "make sure and use a task that is from the 'NightTasks' section of the character_data.json file provided below" +
-                "and if there are multiple tasks specified in the 'NightTasks' section of the character_data.json file provided below," +
-                "pick one that is most relevant to the given situation and position of the character in the current " +
-                "world. Separate each ID with a pipe '|' symbol and terminate each row with a newline character. Make sure you only " +
-                "provide the 10x10 grid of ObjectIDs that are separated by the pipe '|' symbol and terminated each row with a " +
-                "newline character in your response. Here is a example row for your reference: " +
-                "001|001|001|101,farming|001|001|001|001|001|001|.\n " +
+                "Using four inputs - environment_data.json (BackgroundStory plus each " +
+                "tile's ObjectID, TileType, and walkable flag), the 10 x 10 " +
+                "current_world_grid, character_data.json (CharacterID, Role, " +
+                "DayTasks, NightTasks, and each character's ObjectID), and " +
+                "non_walkable_tiles - place every character on one valid tile " +
+                "(walkable == true and ObjectID not in non_walkable_tiles), " +
+                "preferring a tile whose TileType fits the Role when possible. " +
+                "Replace that tile with CharacterID,Task, selecting Task from " +
+                "DayTasks when the current time (HHMM) is between 0600 and 1759, " +
+                "otherwise from NightTasks. Leave all other tiles unchanged. Return " +
+                "only the updated grid: 10 rows separated by newlines, cells separated " +
+                "by the pipe symbol |, with no extra text.\n" +
+
+                "The current world time is - " + formatted_time + ".\n" +
 
                 "Here is the environment_data.json file:\n" +
                 environment_data_string + "\n\n" +
 
+                "Here is the current_world_grid:\n" +
+                world_Grid_String + "\n\n" +
+
                 "Here is the character_data.json file:\n" +
                 character_data_string + "\n\n" +
 
-                "Here is the current_world_grid:\n" + 
+                "Here are the non walkable tiles:\n" +
+                GetNonWalkableTiles(environment_data_string) + "\n\n" +
+
+                "Only respond with the updated 10x10 grid with the characters placed " +
+                "on it and their new tasks. No additional artifacts.";
+        }
+        else if (current_prompt == Prompt_Selected.PS_Descriptive_Paragraph)
+        {
+             prompt =
+                "Below, I’ve provided four very important pieces of information. " +
+                "First, the environment_data.json file which contains two sections " +
+                "titled BackgroundStory and EnvironmentTiles. The BackgroundStory " +
+                "contains the description of the game world. The EnvironmentTiles " +
+                "section contains information about the TileTypes of the world and " +
+                "their corresponding ObjectID’s which have been used to construct " +
+                "the 10x10 grid of the current_world_grid. This leads us to the " +
+                "second important piece of information, the current_world_grid. " +
+                "This is the current world grid that has been generated already. " +
+                "Place each of the characters specified in the character_data.json " +
+                "file onto the 10x10 current world grid by replacing the Tile’s " +
+                "ObjectID in the current_world_grid with the Character’s " +
+                "corresponding ObjectID. If there are only two characters " +
+                "present in the character_data.json, then only replace two " +
+                "Tile ObjectIDs in the current_world_grid with the correct " +
+                "corresponding ObjectID of the Characters that are specified " +
+                "in the character_data.json file. When you place the characters " +
+                "onto the map, make sure you place them in a relevant position " +
+                "based on their Role variable in the character_data.json file, " +
+                "if applicable. The fourth piece of information provided below " +
+                "is a list of tiles that characters are not able to walk on. " +
+                "Make sure you check the ObjectID of the tile you are trying to " +
+                "place the characters on, and be sure to only place the characters " +
+                "on tiles in the grid that have the walkable variable in the " +
+                "environment_data.json file set to true. If the walkable variable " +
+                "is set to false on a EnvironmentTile, that means the characters " +
+                "are not able to walk there, so they should not be placed on that " +
+                "tile. This means you should not replace any tile ObjectID on the " +
+                "current_world_grid with a Character ObjectID, if the tile ObjectID " +
+                "is present in the list of not walkable tiles. Your last task is to " +
+                "also set the current task of the Characters you’ve added to the grid " +
+                "using this format: 'CharacterID,Task' (e.g., '101,resting). The task " +
+                "you give the Characters needs to be based on the current time, " +
+                "which is " + formatted_time + ". If the current time I just stated " +
+                "is between 0600 and 1759, this is daytime so the task you set for " +
+                "each character should be pulled from the appropriate Character's " +
+                "DayTasks section of the character_data.json file. If the time is " +
+                "between 1800 and 0559, this is nighttime so the task you set for " +
+                "each character should be pulled from the appropriate Character’s " +
+                "NightTasks section of the character_data.json file.  Here is an " +
+                "example row with a character on the grid if the time set to " +
+                "nighttime: 001|001|001|101,resting|001|001|001|001|001|001|\\n\n\n" +
+
+                "Here is the environment_data.json file:\n" +
+                environment_data_string + "\n\n" +
+
+                "Here is the current_world_grid:\n" +
                 world_Grid_String + "\n\n" +
 
-                "Respond only with the 10x10 grid in the format specified.";
+                "Here is the character_data.json file:\n" +
+                character_data_string + "\n\n" +
+
+                "Here are the non walkable tiles:\n" +
+                GetNonWalkableTiles(environment_data_string) + "\n\n" +
+
+                "Only respond with the updated 10x10 grid with the characters placed " +
+                "on it and their new tasks. No additional artifacts.";
         } else if (current_prompt == Prompt_Selected.PS_Brief_List) { 
             prompt = 
                 "Instructions: " +
@@ -478,9 +463,6 @@ public class OpenAIController : MonoBehaviour {
                     "   - Check the `EnvironmentTiles` in `environment_data.json` to identify walkable tiles (`Walkable: true`).\n" +
                     "   - Only replace walkable tiles (ObjectIDs 001 or 003) with the character’s ObjectID.\n" +
                     "   - Assign a task from `DayTasks`/`NightTasks` based on the current time (2000 → use `NightTasks`).\n" +
-                    "3. Example:\n" +
-                    "   - \"Role\" : \"Farmer\" (101) should be placed on grass (001) with a task like \"resting\".\n" +
-                    "   - \"Role\" : \"Fisher\" (102) should be placed near water (002) but *not on water* (since it’s unwalkable).\n" +
                     "Format:\n" +
                     "- Replace ONE walkable tile per character.\n" +
                     "- Use `CharacterID,Task` format (e.g., `101,resting`).\n" +
@@ -515,8 +497,7 @@ public class OpenAIController : MonoBehaviour {
                 "   'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
                 "   and walked on. This will represent the position of the character in the world.\n" +
                 "   5. Make sure you place the character in a relevant position in the world. Look at the characters role\n" +
-                "   and see if you can have their position reflect their role. (Example: If the character is a fisher, put\n" +
-                "   them near water).\n" +
+                "   and see if you can have their position reflect their role. \n" +
                 "   6. Provide a task the current character by providing the task type using this format\n" +
                 "   'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
                 "   DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is\n" +
@@ -526,7 +507,7 @@ public class OpenAIController : MonoBehaviour {
                 "   1. The grid should have 10 row and 10 columns, where each cell contains the three-digit ObjectID\n" +
                 "   2. of the corresponding tile in the current_world_grid, or the newly placed characters ObjectID.\n" +
                 "   3. Separate each ID with a pipe '|' symbol and terminate each row with a newline character '\\n'.\n" +
-                "   4. Here is an example row: 001|001|001|001|001|101,fishing|001|001|001|001|\\n\n" +
+                "   4. Here is an example row: 001|001|001|001|001|101,farming|001|001|001|001|\\n\n" +
                 "   5. It is very important that your response only includes the grid and no additional artifacts.\n\n" +
 
                 "environment_data.json:\n" +
@@ -565,7 +546,7 @@ public class OpenAIController : MonoBehaviour {
             // InstantiateGrid(character_Grid, 1);
 
             // Start a routine after the initial placement of the characters
-            StartCoroutine(UpdateCharacterPositionsCoroutine(file_path_initial_placement));
+            StartCoroutine(UpdateCharacterPositionsCoroutine(character_data_json));
         }
     }
 
@@ -593,7 +574,7 @@ public class OpenAIController : MonoBehaviour {
             string prompt = "";
             if (current_prompt == Prompt_Selected.PS_Brief_Paragraph)
             {
-                prompt =
+                /*
                     "Update the positions and tasks of each character in the 'Current Character Grid' on a 10x10 " +
                     "grid by following these rules: For movement, attempt to move each character one block (up, down, " +
                     "left, or right) to an adjacent tile that is walkable (where 'Walkable' is true in 'EnvironmentTiles') " +
@@ -602,21 +583,48 @@ public class OpenAIController : MonoBehaviour {
                     "available, keep them in their current position, ensuring all characters occupy unique tiles after " +
                     "movement. For tasks, assign each character a task based on their 'Role' and the tile they are on or " +
                     "adjacent to, using 'DayTasks' if the current time (provided as a variable) is between 0600 and 1759, " +
-                    "or 'NightTasks' if between 1800 and 0559; for example, farmers get 'farming' on grass tiles, and " +
-                    "fishers get 'fishing' near water tiles. The current time of day is " + formatted_time + "For the " +
+                    "or 'NightTasks' if between 1800 and 0559. The current time of day is " + formatted_time + "For the " +
                     "grid update, use the tile ID from the 'Original World " +
                     "Grid' for tiles without characters. Format the response as a 10x10 grid where cells with characters are " +
                     "'CharacterID,Task' (e.g., '101,farming') and cells without characters are the tile ID (e.g., '001'), " +
                     "separating cells with '|' and ending rows with '\n'. Note that the input grids ('Original World Grid' " +
                     "and 'Current Character Grid') are space-separated, but the response must use '|'.\n" +
+                */
+                prompt =
+                    "Using four inputs – environment_data.json (BackgroundStory plus each tile's " +
+                    "ObjectID, TileType, and walkable flag), current_world_grid (10 x 10 grid of " +
+                    "ObjectIDs), current_character_grid (each character's current position), and " +
+                    "character_data.json (CharacterID, ObjectID, Role, DayTasks, NightTasks) – " +
+                    "move every character exactly one tile north, south, east, or west onto a " +
+                    "destination tile where walkable == true and the ObjectID is from " +
+                    "environment_data.json. Pick the direction that best fits the character's " +
+                    "current Task and the BackgroundStory. Replace the destination tile's " +
+                    "ObjectID with CharacterID,Task, choosing Task from DayTasks when HHMM is " +
+                    "0600-1759, otherwise from NightTasks, and pick the task that makes the most " +
+                    "narrative sense. Leave all other cells unchanged. Return only the updated " +
+                    "10 x 10 grid: ten newline-separated rows with cells separated by the pipe " +
+                    "symbol | and no extra text." +
                     
-                    "Character Data: " + character_data_string + "\n\n" +
-                    "Environment Data: " + environment_data_string + "\n\n" +
-                    "Original World Grid: " + world_Grid_String + "\n\n" +
-                    "Current Character Grid: " + character_Grid_String + "\n\n" +
-                    
-                    "Remember, DO NOT PLACE CHARACTERS ON TILES WHERE THE WALKABLE VARIABLE IS 'false'" +
-                    "Respond only with the 10x10 grid.";
+                    "The current world time is - " + formatted_time + ".\n" +
+
+                    "Here is the environment_data.json file:\n" +
+                    environment_data_string + "\n\n" +
+
+                    "Here is the character_data.json file:\n" +
+                    character_data_string + "\n\n" +
+
+                    "Here is the current_world_grid:\n" +
+                    world_Grid_String + "\n\n" +
+
+                    "Here is the current_character_grid:\n" +
+                    character_Grid_String + "\n\n" +
+
+
+                    "Here are the non walkable tiles:\n" +
+                    GetNonWalkableTiles(environment_data_string) + "\n\n" +
+
+                    "Only respond with the updated 10x10 grid with the characters placed " +
+                    "on it and their new tasks. No additional artifacts.";
                     /*
                     "Instructions: Update the positions and tasks of each character in the 'Current Character Grid' " +
                     "on a 10x10 grid. Follow these rules:\n" +
@@ -713,7 +721,6 @@ public class OpenAIController : MonoBehaviour {
                    "     - Do NOT move into any of the following tiles: " + GetNonWalkableTiles(environment_data_string) + ".\n" +
                    "2. Update tasks based on time (0000 → use `NightTasks`).\n" +
                    "   - Farmer (101): If near house (004), keep \"resting\".\n" +
-                   "   - Fisher (102): If near water (002), keep \"resting\".\n" +
                    "3. If no valid moves, leave the character in place.\n" +
                    "Format:\n" +
                    "- Replace ONE walkable tile per character.\n" +
@@ -760,7 +767,7 @@ public class OpenAIController : MonoBehaviour {
                     "   'walkable variable that is marked 'true', indicating the tile can be replaced by a character\n" +
                     "   and walked on. This will represent the position of the character in the world. Also, Make sure you\n" +
                     "   move the character in a relevant direction in the world. Look at the characters role and see if you\n" +
-                    "   can have their position reflect their role. (Example: If the character is a fisher, move them around water).\n" +
+                    "   can have their position reflect their role. \n" +
                     "   7. Lastly, please provide an updated task the current character by providing the task type using this format\n" +
                     "   'CharacterID,Task'. An example would be '101,fishing'. Make sure the task you set is from one of the\n" +
                     "   DayTasks or NightTasks that are specified in the character_data.json file. The current time of day is " +
